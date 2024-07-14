@@ -1,11 +1,11 @@
-import { Alert, Button, Modal, TextInput, Textarea } from 'flowbite-react';
+import { Alert, Button, Modal, Textarea } from 'flowbite-react';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import Comment from './Comment';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 
-export default function CommentSection({ postId }) {
+export default function CommentSection() {
   const { currentUser } = useSelector((state) => state.user);
   const [comment, setComment] = useState('');
   const [commentError, setCommentError] = useState(null);
@@ -13,11 +13,20 @@ export default function CommentSection({ postId }) {
   const [showModal, setShowModal] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
   const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (comment.length > 200) {
+
+    if (!comment) {
+      setCommentError('Comment cannot be empty.');
       return;
     }
+
+    if (comment.length > 200) {
+      setCommentError('Comment length must be 200 characters or less.');
+      return;
+    }
+
     try {
       const res = await fetch('/api/comment/create', {
         method: 'POST',
@@ -26,35 +35,38 @@ export default function CommentSection({ postId }) {
         },
         body: JSON.stringify({
           content: comment,
-          postId,
           userId: currentUser._id,
         }),
       });
+
       const data = await res.json();
+
       if (res.ok) {
         setComment('');
         setCommentError(null);
         setComments([data, ...comments]);
+      } else {
+        setCommentError(data.message || 'Failed to create comment.');
       }
     } catch (error) {
-      setCommentError(error.message);
+      setCommentError(error.message || 'An error occurred while creating the comment.');
     }
   };
 
   useEffect(() => {
     const getComments = async () => {
       try {
-        const res = await fetch(`/api/comment/getPostComments/${postId}`);
+        const res = await fetch('/api/comment/getPostComments');
         if (res.ok) {
           const data = await res.json();
-          setComments(data);
+          setComments(data.comments || []); // Ensure data is properly set
         }
       } catch (error) {
         console.log(error.message);
       }
     };
     getComments();
-  }, [postId]);
+  }, []);
 
   const handleLike = async (commentId) => {
     try {
@@ -103,72 +115,77 @@ export default function CommentSection({ postId }) {
         method: 'DELETE',
       });
       if (res.ok) {
-        const data = await res.json();
         setComments(comments.filter((comment) => comment._id !== commentId));
       }
     } catch (error) {
       console.log(error.message);
     }
   };
+
   return (
-    <div className='max-w-2xl mx-auto w-full p-3'>
+    <div className="max-w-2xl mx-auto w-full p-3">
       {currentUser ? (
-        <div className='flex items-center gap-1 my-5 text-gray-500 text-sm'>
+        <div className="flex items-center gap-1 my-5 text-white text-sm">
           <p>Signed in as:</p>
           <img
-            className='h-5 w-5 object-cover rounded-full'
+            className="h-5 w-5 object-cover rounded-full"
             src={currentUser.profilePicture}
-            alt=''
+            alt=""
           />
           <Link
             to={'/dashboard?tab=profile'}
-            className='text-xs text-cyan-600 hover:underline'
+            className="text-xs text-orange-500 hover:underline"
           >
             @{currentUser.username}
           </Link>
         </div>
       ) : (
-        <div className='text-sm text-teal-500 my-5 flex gap-1'>
+        <div className="text-sm text-white my-5 flex gap-1">
           You must be signed in to comment.
-          <Link className='text-blue-500 hover:underline' to={'/sign-in'}>
+          <Link className="text-orange-500 hover:underline" to={'/sign-in'}>
             Sign In
           </Link>
         </div>
       )}
-      {currentUser && (
+      {currentUser && (currentUser.isAdmin || currentUser.isOverallAdmin) && (
         <form
           onSubmit={handleSubmit}
-          className='border border-teal-500 rounded-md p-3'
+          className="border border-blue-500 rounded-md p-3 mb-5"
         >
           <Textarea
-            placeholder='Add a comment...'
-            rows='3'
-            maxLength='200'
+            placeholder="Add a comment..."
+            rows="3"
+            maxLength="200"
+            className="resize-none rounded-md"
             onChange={(e) => setComment(e.target.value)}
             value={comment}
           />
-          <div className='flex justify-between items-center mt-5'>
-            <p className='text-gray-500 text-xs'>
-              {200 - comment.length} characters remaining
+          <div className="flex justify-between items-center mt-2">
+            <p className="text-white text-xs">
+              {200 - (comment?.length || 0)} characters remaining
             </p>
-            <Button outline gradientDuoTone='purpleToBlue' type='submit'>
+            <Button
+              outline
+              className="border border-blue-500 text-orange-500 hover:bg-orange-100"
+              type="submit"
+            >
               Submit
             </Button>
           </div>
           {commentError && (
-            <Alert color='failure' className='mt-5'>
+            <Alert color="failure" className="mt-2">
               {commentError}
             </Alert>
           )}
         </form>
       )}
       {comments.length === 0 ? (
-        <p className='text-sm my-5'>No comments yet!</p>
+        <p className="text-sm my-5">No comments yet!</p>
       ) : (
         <>
-          <div className='text-sm my-5 flex items-center gap-1'>
+          <div className="text-sm my-5 flex items-center gap-1">
             <p>Comments</p>
-            <div className='border border-gray-400 py-1 px-2 rounded-sm'>
+            <div className="border border-gray-400 py-1 px-2 rounded-sm">
               <p>{comments.length}</p>
             </div>
           </div>
@@ -190,23 +207,20 @@ export default function CommentSection({ postId }) {
         show={showModal}
         onClose={() => setShowModal(false)}
         popup
-        size='md'
+        size="md"
       >
         <Modal.Header />
         <Modal.Body>
-          <div className='text-center'>
-            <HiOutlineExclamationCircle className='h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto' />
-            <h3 className='mb-5 text-lg text-gray-500 dark:text-gray-400'>
+          <div className="text-center">
+            <HiOutlineExclamationCircle className="h-14 w-14 text-orange-500 mb-4 mx-auto" />
+            <h3 className="mb-5 text-lg text-black">
               Are you sure you want to delete this comment?
             </h3>
-            <div className='flex justify-center gap-4'>
-              <Button
-                color='failure'
-                onClick={() => handleDelete(commentToDelete)}
-              >
+            <div className="flex justify-center gap-4">
+              <Button color="failure" onClick={() => handleDelete(commentToDelete)}>
                 Yes, I'm sure
               </Button>
-              <Button color='gray' onClick={() => setShowModal(false)}>
+              <Button color="gray" onClick={() => setShowModal(false)}>
                 No, cancel
               </Button>
             </div>

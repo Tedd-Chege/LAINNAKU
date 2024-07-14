@@ -3,166 +3,218 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
-import { set } from 'mongoose';
 
-export default function DashPosts() {
+export default function AllPosts() {
   const { currentUser } = useSelector((state) => state.user);
-  const [userPosts, setUserPosts] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [showMore, setShowMore] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [postIdToDelete, setPostIdToDelete] = useState('');
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     const fetchPosts = async () => {
+      setLoading(true);
       try {
-        const res = await fetch(`/api/post/getposts?userId=${currentUser._id}`);
+        const res = await fetch(`/api/files/getallposts`, {
+          method: 'GET',
+        });
         const data = await res.json();
         if (res.ok) {
-          setUserPosts(data.posts);
-          if (data.posts.length < 9) {
-            setShowMore(false);
-          }
+          // Sort posts by uploadDate in descending order
+          const sortedPosts = data.posts.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+          setPosts(sortedPosts);
+          setShowMore(sortedPosts.length >= 9);
+        } else {
+          console.log(data.message);
         }
       } catch (error) {
         console.log(error.message);
+      } finally {
+        setLoading(false);
       }
     };
-    if (currentUser.isAdmin) {
+
+    if (currentUser.isOverallAdmin) {
       fetchPosts();
     }
-  }, [currentUser._id]);
+  }, [currentUser.isOverallAdmin]);
 
   const handleShowMore = async () => {
-    const startIndex = userPosts.length;
+    setLoading(true);
+    const startIndex = posts.length;
     try {
       const res = await fetch(
-        `/api/post/getposts?userId=${currentUser._id}&startIndex=${startIndex}`
+        `/api/files/getallposts?startIndex=${startIndex}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        }
       );
       const data = await res.json();
       if (res.ok) {
-        setUserPosts((prev) => [...prev, ...data.posts]);
-        if (data.posts.length < 9) {
-          setShowMore(false);
-        }
+        // Concatenate new posts and sort again by uploadDate in descending order
+        const updatedPosts = [...posts, ...data.posts];
+        const sortedPosts = updatedPosts.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+        setPosts(sortedPosts);
+        setShowMore(sortedPosts.length >= 9);
+      } else {
+        console.log(data.message);
       }
     } catch (error) {
       console.log(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Group posts by category
+  const groupedPosts = posts.reduce((acc, post) => {
+    acc[post.category] = acc[post.category] || [];
+    acc[post.category].push(post);
+    return acc;
+  }, {});
+
+  const truncateText = (text, length) => {
+    if (text.length <= length) {
+      return text;
+    }
+    return text.substring(0, length) + '...';
+  };
+
   const handleDeletePost = async () => {
+    setLoading(true);
     setShowModal(false);
     try {
       const res = await fetch(
-        `/api/post/deletepost/${postIdToDelete}/${currentUser._id}`,
+        `/api/files/deletepost/${postIdToDelete}/${currentUser._id}`,
         {
           method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
         }
       );
       const data = await res.json();
-      if (!res.ok) {
-        console.log(data.message);
-      } else {
-        setUserPosts((prev) =>
+      if (res.ok) {
+        setPosts((prev) =>
           prev.filter((post) => post._id !== postIdToDelete)
         );
+      } else {
+        console.log(data.message);
       }
     } catch (error) {
       console.log(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className='table-auto overflow-x-scroll md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500'>
-      {currentUser.isAdmin && userPosts.length > 0 ? (
+    <div className="table-auto overflow-x-scroll md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
+      {loading ? (
+        <p>Loading...</p>
+      ) : currentUser.isOverallAdmin && Object.keys(groupedPosts).length > 0 ? (
         <>
-          <Table hoverable className='shadow-md'>
-            <Table.Head>
-              <Table.HeadCell>Date updated</Table.HeadCell>
-              <Table.HeadCell>Post image</Table.HeadCell>
-              <Table.HeadCell>Post title</Table.HeadCell>
-              <Table.HeadCell>Category</Table.HeadCell>
-              <Table.HeadCell>Delete</Table.HeadCell>
-              <Table.HeadCell>
-                <span>Edit</span>
-              </Table.HeadCell>
-            </Table.Head>
-            {userPosts.map((post) => (
-              <Table.Body className='divide-y'>
-                <Table.Row className='bg-white dark:border-gray-700 dark:bg-gray-800'>
-                  <Table.Cell>
-                    {new Date(post.updatedAt).toLocaleDateString()}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Link to={`/post/${post.slug}`}>
-                      <img
-                        src={post.image}
-                        alt={post.title}
-                        className='w-20 h-10 object-cover bg-gray-500'
-                      />
-                    </Link>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Link
-                      className='font-medium text-gray-900 dark:text-white'
-                      to={`/post/${post.slug}`}
-                    >
-                      {post.title}
-                    </Link>
-                  </Table.Cell>
-                  <Table.Cell>{post.category}</Table.Cell>
-                  <Table.Cell>
-                    <span
-                      onClick={() => {
-                        setShowModal(true);
-                        setPostIdToDelete(post._id);
-                      }}
-                      className='font-medium text-red-500 hover:underline cursor-pointer'
-                    >
-                      Delete
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Link
-                      className='text-teal-500 hover:underline'
-                      to={`/update-post/${post._id}`}
-                    >
-                      <span>Edit</span>
-                    </Link>
-                  </Table.Cell>
-                </Table.Row>
-              </Table.Body>
-            ))}
-          </Table>
+          {Object.keys(groupedPosts).map((category) => (
+            <div key={category}>
+              <h2 className="text-xl font-bold my-4">{category}</h2>
+              <Table hoverable className="shadow-md">
+                <Table.Head>
+                  <Table.HeadCell>Title</Table.HeadCell>
+                  <Table.HeadCell>Category</Table.HeadCell>
+                  <Table.HeadCell>Form</Table.HeadCell>
+                  <Table.HeadCell>Subject</Table.HeadCell>
+                  {category !== 'notes' && (
+                    <>
+                      <Table.HeadCell>Term</Table.HeadCell>
+                      <Table.HeadCell>Year</Table.HeadCell>
+                    </>
+                  )}
+                  <Table.HeadCell>Download</Table.HeadCell>
+                  <Table.HeadCell>Delete</Table.HeadCell>
+                  <Table.HeadCell>Edit</Table.HeadCell>
+                </Table.Head>
+                {groupedPosts[category].map((post) => (
+                  <Table.Body key={post._id} className="divide-y">
+                    <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                      <Table.Cell>{post.title || ' '}</Table.Cell>
+                      <Table.Cell>{post.category || ' '}</Table.Cell>
+                      <Table.Cell>{post.form || ' '}</Table.Cell>
+                      <Table.Cell>{post.subject || ' '}</Table.Cell>
+                      {category !== 'notes' && (
+                        <>
+                          <Table.Cell>{post.term || ' '}</Table.Cell>
+                          <Table.Cell>{post.year || ' '}</Table.Cell>
+                        </>
+                      )}
+                      <Table.Cell>
+                        <a
+                          href={post.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-teal-500 underline"
+                        >
+                          Download
+                        </a>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <span
+                          onClick={() => {
+                            setShowModal(true);
+                            setPostIdToDelete(post._id);
+                          }}
+                          className="font-medium text-red-500 hover:underline cursor-pointer"
+                        >
+                          Delete
+                        </span>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Link
+                          className="text-teal-500 hover:underline"
+                          to={`/update-post/${post._id}`}
+                        >
+                          Edit
+                        </Link>
+                      </Table.Cell>
+                    </Table.Row>
+                  </Table.Body>
+                ))}
+              </Table>
+            </div>
+          ))}
           {showMore && (
             <button
               onClick={handleShowMore}
-              className='w-full text-teal-500 self-center text-sm py-7'
+              className="w-full text-teal-500 self-center text-sm py-7"
             >
               Show more
             </button>
           )}
         </>
       ) : (
-        <p>You have no posts yet!</p>
+        <p>No posts available!</p>
       )}
       <Modal
         show={showModal}
         onClose={() => setShowModal(false)}
         popup
-        size='md'
+        size="md"
       >
         <Modal.Header />
         <Modal.Body>
-          <div className='text-center'>
-            <HiOutlineExclamationCircle className='h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto' />
-            <h3 className='mb-5 text-lg text-gray-500 dark:text-gray-400'>
+          <div className="text-center">
+            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
+            <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
               Are you sure you want to delete this post?
             </h3>
-            <div className='flex justify-center gap-4'>
-              <Button color='failure' onClick={handleDeletePost}>
+            <div className="flex justify-center gap-4">
+              <Button color="failure" onClick={handleDeletePost}>
                 Yes, I'm sure
               </Button>
-              <Button color='gray' onClick={() => setShowModal(false)}>
+              <Button color="gray" onClick={() => setShowModal(false)}>
                 No, cancel
               </Button>
             </div>

@@ -50,16 +50,7 @@ export default function DashProfile() {
   }, [imageFile]);
 
   const uploadImage = async () => {
-    // service firebase.storage {
-    //   match /b/{bucket}/o {
-    //     match /{allPaths=**} {
-    //       allow read;
-    //       allow write: if
-    //       request.resource.size < 2 * 1024 * 1024 &&
-    //       request.resource.contentType.matches('image/.*')
-    //     }
-    //   }
-    // }
+    
     setImageFileUploading(true);
     setImageFileUploadError(null);
     const storage = getStorage(app);
@@ -165,7 +156,7 @@ export default function DashProfile() {
     }
   };
   return (
-    <div className='max-w-lg mx-auto p-3 w-full'>
+    <div className='max-w-lg mx-auto p-3 w-full '>
       <h1 className='my-7 text-center font-semibold text-3xl'>Profile</h1>
       <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
         <input
@@ -235,18 +226,18 @@ export default function DashProfile() {
         />
         <Button
           type='submit'
-          gradientDuoTone='purpleToBlue'
+        className='bg-orange-500'
           outline
           disabled={loading || imageFileUploading}
         >
           {loading ? 'Loading...' : 'Update'}
         </Button>
-        {currentUser.isAdmin && (
-          <Link to={'/create-post'}>
+        {currentUser.isAdmin || currentUser.isOverallAdmin && (
+          <Link to={'/create-post1'}>
             <Button
               type='button'
-              gradientDuoTone='purpleToPink'
-              className='w-full'
+              
+              className='w-full bg-green-600'
             >
               Create a post
             </Button>

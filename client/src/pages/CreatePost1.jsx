@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { app } from '../firebase';
 import { useSelector } from 'react-redux';
+import { getStorage, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
+import { app } from '../firebase';
 
-const UpdatePost = () => {
-  const {postId } = useParams();
-  const navigate = useNavigate();
+const UploadForm = () => {
   const { currentUser } = useSelector((state) => state.user);
   const [file, setFile] = useState(null);
   const [fileUrl, setFileUrl] = useState('');
@@ -15,32 +12,11 @@ const UpdatePost = () => {
   const [subject, setSubject] = useState('math');
   const [year, setYear] = useState('');
   const [term, setTerm] = useState('');
-  const [form, setForm] = useState('1');
+  const [form, setForm] = useState('');
   const [description, setDescription] = useState('');
   const [title, setTitle] = useState('');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchPostData = async () => {
-      try {
-        const response = await axios.get(`/api/files/getposts/${postId}`);
-        const post = response.data;
-        setFileUrl(post.fileUrl);
-        setCategory(post.category);
-        setSubject(post.subject);
-        setYear(post.year.toString());
-        setTerm(post.term);
-        setForm(post.form);
-        setDescription(post.description);
-        setTitle(post.title);
-      } catch (error) {
-        console.error('Error fetching post data:', error);
-      }
-    };
-
-    fetchPostData();
-  }, [postId]);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -55,16 +31,14 @@ const UpdatePost = () => {
     return new Promise((resolve, reject) => {
       uploadTask.on(
         'state_changed',
-        () => {},
+        (snapshot) => {},
         (error) => {
           reject(error);
         },
         () => {
-          getDownloadURL(uploadTask.snapshot.ref)
-            .then((url) => {
-              resolve(url);
-            })
-            .catch(reject);
+          getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+            resolve(url);
+          }).catch(reject);
         }
       );
     });
@@ -95,16 +69,16 @@ const UpdatePost = () => {
   const handleRemoveFile = () => {
     setFileUrl('');
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!fileUrl) {
       setError('You must upload a file');
       return;
     }
-
+  
     const formData = {
+      userId: currentUser._id,
       fileUrl,
       category,
       subject,
@@ -113,27 +87,36 @@ const UpdatePost = () => {
       form,
       description,
       title,
+      uploadDate: new Date()
     };
-
+  
     try {
-      await axios.put(`/api/files/updatepost/${postId}`, formData, {
+      await axios.post('/api/files/upload', formData, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${currentUser.token}`, // Assuming currentUser has a token property
+          'Authorization': `Bearer ${currentUser.token}`  // Assuming currentUser has a token property
         },
       });
-
-      alert('Post updated successfully');
-      navigate('/');
+  
+      alert('File uploaded successfully');
+      setFileUrl('');
+      setCategory('notes');
+      setSubject('math');
+      setYear('');
+      setTerm('');
+      setForm('');
+      setDescription('');
+      setTitle('');
     } catch (error) {
       console.error(error);
-      setError('Failed to update post');
+      setError('Failed to upload file');
     }
   };
+  
 
   return (
     <div className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center">Update Post</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">Upload File</h2>
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div className="form-group">
           <label className="block text-sm font-medium text-gray-700">Title:</label>
@@ -151,7 +134,7 @@ const UpdatePost = () => {
             type="file"
             onChange={handleFileChange}
             className="mt-1 block w-full text-sm text-gray-500 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-          
+            required
           />
           <button
             type="button"
@@ -213,11 +196,9 @@ const UpdatePost = () => {
             <option value="kiswahili">Kiswahili</option>
             <option value="biology">Biology</option>
             <option value="chemistry">Chemistry</option>
-            <option value="physics">Physics</option>
-            <option value="geography">Geography</option>
             <option value="history">History</option>
+            <option value="geography">Geography</option>
             <option value="cre">CRE</option>
-            <option value="business">Business</option>
             <option value="computer">Computer</option>
             <option value="french">French</option>
             <option value="aviation">Aviation</option>
@@ -267,6 +248,7 @@ const UpdatePost = () => {
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             required
           >
+              <option value=""></option>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
@@ -280,18 +262,17 @@ const UpdatePost = () => {
             onChange={(e) => setDescription(e.target.value)}
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             required
-          ></textarea>
+          />
         </div>
         <button
           type="submit"
           className="w-full py-2 px-4 bg-blue-600 text-white font-bold rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
-          Update Post
+          Submit
         </button>
-        {error && <p className="text-red-700 mt-2">{error}</p>}
       </form>
     </div>
   );
 };
 
-export default UpdatePost;
+export default UploadForm;

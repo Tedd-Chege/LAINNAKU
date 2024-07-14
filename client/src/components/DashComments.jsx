@@ -2,7 +2,6 @@ import { Modal, Table, Button } from 'flowbite-react';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
-import { FaCheck, FaTimes } from 'react-icons/fa';
 
 export default function DashComments() {
   const { currentUser } = useSelector((state) => state.user);
@@ -10,6 +9,7 @@ export default function DashComments() {
   const [showMore, setShowMore] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [commentIdToDelete, setCommentIdToDelete] = useState('');
+
   useEffect(() => {
     const fetchComments = async () => {
       try {
@@ -25,7 +25,7 @@ export default function DashComments() {
         console.log(error.message);
       }
     };
-    if (currentUser.isAdmin) {
+    if (currentUser.isOverallAdmin) {
       fetchComments();
     }
   }, [currentUser._id]);
@@ -62,7 +62,6 @@ export default function DashComments() {
         setComments((prev) =>
           prev.filter((comment) => comment._id !== commentIdToDelete)
         );
-        setShowModal(false);
       } else {
         console.log(data.message);
       }
@@ -72,55 +71,55 @@ export default function DashComments() {
   };
 
   return (
-    <div className='table-auto overflow-x-scroll md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500'>
-      {currentUser.isAdmin && comments.length > 0 ? (
+    <div className='max-w-4xl mx-auto p-3'>
+      {currentUser.isOverallAdmin && comments.length > 0 ? (
         <>
           <Table hoverable className='shadow-md'>
             <Table.Head>
               <Table.HeadCell>Date updated</Table.HeadCell>
               <Table.HeadCell>Comment content</Table.HeadCell>
               <Table.HeadCell>Number of likes</Table.HeadCell>
-              <Table.HeadCell>PostId</Table.HeadCell>
-              <Table.HeadCell>UserId</Table.HeadCell>
+              
               <Table.HeadCell>Delete</Table.HeadCell>
             </Table.Head>
             {comments.map((comment) => (
-              <Table.Body className='divide-y' key={comment._id}>
-                <Table.Row className='bg-white dark:border-gray-700 dark:bg-gray-800'>
+              <Table.Body key={comment._id}>
+                <Table.Row className='bg-white dark:bg-gray-800'>
                   <Table.Cell>
                     {new Date(comment.updatedAt).toLocaleDateString()}
                   </Table.Cell>
                   <Table.Cell>{comment.content}</Table.Cell>
                   <Table.Cell>{comment.numberOfLikes}</Table.Cell>
-                  <Table.Cell>{comment.postId}</Table.Cell>
-                  <Table.Cell>{comment.userId}</Table.Cell>
+               
                   <Table.Cell>
-                    <span
+                    <Button
+                      color='failure'
                       onClick={() => {
                         setShowModal(true);
                         setCommentIdToDelete(comment._id);
                       }}
-                      className='font-medium text-red-500 hover:underline cursor-pointer'
                     >
                       Delete
-                    </span>
+                    </Button>
                   </Table.Cell>
                 </Table.Row>
               </Table.Body>
             ))}
           </Table>
           {showMore && (
-            <button
+            <Button
               onClick={handleShowMore}
-              className='w-full text-teal-500 self-center text-sm py-7'
+              className='mt-3'
+              gradientDuoTone='blueToGreen'
             >
               Show more
-            </button>
+            </Button>
           )}
         </>
       ) : (
         <p>You have no comments yet!</p>
       )}
+
       <Modal
         show={showModal}
         onClose={() => setShowModal(false)}
