@@ -52,6 +52,11 @@ export default function Header() {
         ) : null}
         
         <div className='flex gap-2 md:order-2'>
+
+        <Link to={'/dashboard?tab=profile'}>
+                <Button>Profile</Button>
+              </Link>
+
           {currentUser ? (
             <Dropdown
               arrowIcon={false}
