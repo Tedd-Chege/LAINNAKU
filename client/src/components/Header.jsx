@@ -42,13 +42,14 @@ export default function Header() {
         >
           LAINNAKU
         </Link>
-        
-        <Link to='/search'>
-        <Button type='submit' className='bg-black text-white'>
-            Search files
-          </Button>
-        </Link>
-          
+
+        {currentUser?.isAdmin || currentUser?.isOverallAdmin || currentUser?.isNormalAdmin ? (
+          <Link to='/search'>
+            <Button type='submit' className='bg-black text-white'>
+              Search files
+            </Button>
+          </Link>
+        ) : null}
         
         <div className='flex gap-2 md:order-2'>
           {currentUser ? (
@@ -97,7 +98,6 @@ export default function Header() {
               About
             </Link>
           </Navbar.Link>
-         
         </Navbar.Collapse>
       </Navbar>
     </div>

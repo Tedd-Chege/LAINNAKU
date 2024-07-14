@@ -88,7 +88,7 @@ export default function Search() {
 
   return (
     <div className='flex flex-col md:flex-row mt-16'>
-      <div className='p-5 border-b md:border-r md:min-h-screen border-gray-500 bg-green-600'>
+      <div className='p-5 border-b md:border-r md:min-h-screen border-gray-500 bg-gray-900'>
         <form className='flex flex-col gap-3' onSubmit={handleSubmit}>
           <div className='flex flex-col gap-2'>
             <label htmlFor='category' className='text-white'>
@@ -195,7 +195,7 @@ export default function Search() {
             </>
           )}
 
-          <Button className='bg-orange-700 hover:bg-blue-600 text-white' type='submit'>Search</Button>
+          <Button className='bg-orange-500 hover:bg-blue-600 text-white' type='submit'>Search</Button>
         </form>
       </div>
 
