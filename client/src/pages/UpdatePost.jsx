@@ -124,7 +124,7 @@ const UpdatePost = () => {
       });
 
       alert('Post updated successfully');
-      navigate('/');
+      navigate('/dashboard?tab=profile');
     } catch (error) {
       console.error(error);
       setError('Failed to update post');
