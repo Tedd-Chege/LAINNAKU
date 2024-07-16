@@ -1,5 +1,5 @@
 import { Modal } from 'flowbite-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import Sidebar from './sidebarHome'; // Import the Sidebar component
 import PostCard from './PostCard'; // Import the new PostCard component
@@ -13,28 +13,33 @@ export default function AllPosts() {
   const [showModal, setShowModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [startIndex, setStartIndex] = useState(0);
+  const fetchedPostIds = useRef(new Set());
   const limit = 10;
 
   useEffect(() => {
-    fetchPosts();
+    fetchPosts(0); // Fetch initial posts
   }, []); // Empty dependency array ensures it runs once when the component mounts
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (index) => {
     try {
-      const res = await fetch(`/api/files/getallposts?startIndex=${startIndex}&limit=${limit}`);
+      const res = await fetch(`/api/files/getallposts?startIndex=${index}&limit=${limit}`);
       const data = await res.json();
       if (res.ok) {
-        // Check for duplicates before adding posts
-        const newPosts = data.posts.filter(post => !posts.some(existingPost => existingPost._id === post._id));
+        const newPosts = data.posts.filter(post => !fetchedPostIds.current.has(post._id));
+        newPosts.forEach(post => fetchedPostIds.current.add(post._id));
         setPosts((prevPosts) => [...prevPosts, ...newPosts]);
         setHasMore(newPosts.length >= limit);
-        setStartIndex((prevIndex) => prevIndex + limit);
+        setStartIndex(index + limit);
       } else {
         console.log(data.message);
       }
     } catch (error) {
       console.log(error.message);
     }
+  };
+
+  const fetchMorePosts = () => {
+    fetchPosts(startIndex);
   };
 
   // Group posts by category
@@ -47,7 +52,7 @@ export default function AllPosts() {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   return (
-    <div className="flex ">
+    <div className="flex">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
 
       {/* Main Content */}
@@ -59,7 +64,7 @@ export default function AllPosts() {
           <div className="p-1">
             <InfiniteScroll
               dataLength={posts.length}
-              next={fetchPosts}
+              next={fetchMorePosts}
               hasMore={hasMore}
               loader={<p className="text-center">Loading...</p>}
               endMessage={<p className="text-center">No more posts available!</p>}
