@@ -4,68 +4,36 @@ import { useSelector } from 'react-redux';
 import Sidebar from './sidebarHome'; // Import the Sidebar component
 import PostCard from './PostCard'; // Import the new PostCard component
 import { HiMenu } from 'react-icons/hi';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 export default function AllPosts() {
   const { currentUser } = useSelector((state) => state.user);
   const [posts, setPosts] = useState([]);
-  const [showMore, setShowMore] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [startIndex, setStartIndex] = useState(0);
+  const limit = 10;
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/files/getallposts`, {
-          method: 'GET',
-        });
-        const data = await res.json();
-        if (res.ok) {
-          // Sort posts by uploadDate in descending order
-          const sortedPosts = data.posts.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
-          setPosts(sortedPosts);
-          setShowMore(sortedPosts.length >= 9);
-        } else {
-          console.log(data.message);
-        }
-      } catch (error) {
-        console.log(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPosts(); // Fetch posts unconditionally
+    fetchPosts();
   }, []); // Empty dependency array ensures it runs once when the component mounts
 
-  const handleShowMore = async () => {
-    setLoading(true);
-    const startIndex = posts.length;
+  const fetchPosts = async () => {
     try {
-      const res = await fetch(
-        `/api/files/getallposts?startIndex=${startIndex}`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          },
-        }
-      );
+      const res = await fetch(`/api/files/getallposts?startIndex=${startIndex}&limit=${limit}`);
       const data = await res.json();
       if (res.ok) {
-        // Concatenate new posts and sort again by uploadDate in descending order
-        const updatedPosts = [...posts, ...data.posts];
-        const sortedPosts = updatedPosts.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
-        setPosts(sortedPosts);
-        setShowMore(sortedPosts.length >= 9);
+        // Check for duplicates before adding posts
+        const newPosts = data.posts.filter(post => !posts.some(existingPost => existingPost._id === post._id));
+        setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+        setHasMore(newPosts.length >= limit);
+        setStartIndex((prevIndex) => prevIndex + limit);
       } else {
         console.log(data.message);
       }
     } catch (error) {
       console.log(error.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -79,42 +47,40 @@ export default function AllPosts() {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   return (
-    <div className="flex">
+    <div className="flex ">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
 
       {/* Main Content */}
-      <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-0 md:ml-80' : 'ml-5 md:ml-80'}`}>
+      <div className={`flex-1 mt-4 transition-all duration-300 ${sidebarOpen ? 'ml-0 md:ml-80' : 'ml-5 md:ml-80'}`}>
         <div className="p-4">
           <button className="md:hidden mb-4" onClick={toggleSidebar}>
             <HiMenu className="h-6 w-6 text-gray-700" />
           </button>
           <div className="p-1">
-            {loading ? (
-              <p className="text-center">Loading...</p>
-            ) : Object.keys(groupedPosts).length > 0 ? (
-              <>
-                {Object.keys(groupedPosts).map((category) => (
-                  <div key={category} className="mb-6">
-                    <h2 className="text-xl font-bold uppercase mb-4 mt-16">{category}</h2>
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                      {groupedPosts[category].map((post) => (
-                        <PostCard key={post._id} post={post} /> // Use PostCard component
-                      ))}
+            <InfiniteScroll
+              dataLength={posts.length}
+              next={fetchPosts}
+              hasMore={hasMore}
+              loader={<p className="text-center">Loading...</p>}
+              endMessage={<p className="text-center">No more posts available!</p>}
+            >
+              {Object.keys(groupedPosts).length > 0 ? (
+                <>
+                  {Object.keys(groupedPosts).map((category) => (
+                    <div key={category} className="mb-6">
+                      <h2 className="text-xl font-bold uppercase mb-4 mt-16">{category}</h2>
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {groupedPosts[category].map((post) => (
+                          <PostCard key={post._id} post={post} /> // Use PostCard component
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
-                {showMore && (
-                  <button
-                    onClick={handleShowMore}
-                    className="w-full text-teal-500 self-center text-sm py-7"
-                  >
-                    Show more
-                  </button>
-                )}
-              </>
-            ) : (
-              <p className="text-center">No posts available!</p>
-            )}
+                  ))}
+                </>
+              ) : (
+                <p className="text-center">No posts available!</p>
+              )}
+            </InfiniteScroll>
             <Modal
               show={showModal}
               onClose={() => setShowModal(false)}

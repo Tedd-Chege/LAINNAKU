@@ -55,11 +55,13 @@ export default function AllPosts() {
       );
       const data = await res.json();
       if (res.ok) {
+        // Check for duplicates before adding new posts
+        const newPosts = data.posts.filter(post => !posts.some(existingPost => existingPost._id === post._id));
         // Concatenate new posts and sort again by uploadDate in descending order
-        const updatedPosts = [...posts, ...data.posts];
+        const updatedPosts = [...posts, ...newPosts];
         const sortedPosts = updatedPosts.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
         setPosts(sortedPosts);
-        setShowMore(sortedPosts.length >= 9);
+        setShowMore(newPosts.length >= 9);
       } else {
         console.log(data.message);
       }

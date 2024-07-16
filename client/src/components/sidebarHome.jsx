@@ -5,7 +5,7 @@ import CommentSection from './CommentSection';
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   return (
     <>
-      <div className={`fixed pt-16  left-0 h-full bg-gray-900 text-white transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 w-64 md:w-80`}>
+      <div className={`fixed mt-16  left-0 h-full bg-gray-900 text-white transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 w-64 md:w-80`}>
         <div className="p-1">
           <button className="md:hidden absolute top-13 right-[-40px] bg-gray-900 rounded-full p-2" onClick={toggleSidebar}>
             <HiX className="h-6 w-6 text-white" />

@@ -13,7 +13,7 @@ const postSchema = new Schema({
   },
   category: {
     type: String,
-    enum: ['notes', 'exams', 'results', 'markingschemes'],
+    enum: ['notes', 'exams', 'results', 'marking_scheme'],
     required: true,
   },
   subject: {
