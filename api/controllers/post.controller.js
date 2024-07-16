@@ -90,9 +90,7 @@ export const searchPosts = async (req, res) => {
 
 
 export const deletepost = async (req, res, next) => {
-  if (!req.user.isOverallAdmin || req.user.id !== req.params.userId) {
-    return next(errorHandler(403, 'You are not allowed to delete this post'));
-  }
+  
   try {
     await NewPost.findByIdAndDelete(req.params.postId);
     res.status(200).json('The post has been deleted');

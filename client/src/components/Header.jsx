@@ -6,7 +6,6 @@ import { signoutSuccess } from '../redux/user/userSlice';
 
 export default function Header() {
   const path = useLocation().pathname;
-  const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { currentUser } = useSelector((state) => state.user);
@@ -50,12 +49,15 @@ export default function Header() {
             </Button>
           </Link>
         ) : null}
-        
-        <div className='flex gap-2 md:order-2'>
 
-        <Link to={'/dashboard?tab=profile'}>
-                <Button>Profile</Button>
-              </Link>
+        <div className='flex gap-2 md:order-2'>
+          {currentUser && (
+            <Link to={'/dashboard?tab=profile'}>
+              <Button className='bg-green-800 text-sm shadow-md'>
+                Profile
+              </Button>
+            </Link>
+          )}
 
           {currentUser ? (
             <Dropdown

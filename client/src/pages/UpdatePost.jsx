@@ -29,7 +29,7 @@ const UpdatePost = () => {
         setFileUrl(post.fileUrl);
         setCategory(post.category);
         setSubject(post.subject);
-        setYear(post.year.toString());
+        setYear(post.year);
         setTerm(post.term);
         setForm(post.form);
         setDescription(post.description);
