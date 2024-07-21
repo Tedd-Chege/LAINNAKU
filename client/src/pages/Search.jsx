@@ -104,7 +104,7 @@ export default function Search() {
               <option value='notes'>Notes</option>
               <option value='exams'>Exams</option>
               <option value='results'>Results</option>
-              <option value='markingschemes'>Marking Schemes</option>
+              <option value='marking_scheme'>Marking Schemes</option>
             </Select>
           </div>
 
