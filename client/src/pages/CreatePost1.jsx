@@ -209,6 +209,7 @@ const UploadForm = () => {
             <option value="business">Business</option>
             <option value="woodwork">Woodwork</option>
             <option value="art">Art</option>
+            <option value="drawing_design">Drawing and design</option>
             <option value="building_construction">Building & Construction</option>
             <option value="all_subjects">all subjects</option>
           </select>
