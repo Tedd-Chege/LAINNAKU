@@ -201,6 +201,7 @@ const UploadForm = () => {
             <option value="cre">CRE</option>
             <option value="computer">Computer</option>
             <option value="french">French</option>
+            <option value="german">German</option>
             <option value="aviation">Aviation</option>
             <option value="agriculture">Agriculture</option>
             <option value="music">Music</option>
