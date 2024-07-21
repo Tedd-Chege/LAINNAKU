@@ -19,7 +19,7 @@ const postSchema = new Schema({
   subject: {
     type: String,
     enum: [
-      'math', 'english', 'Kiswahili', 'biology', 'chemistry', 'history', 'geography',
+      'math', 'english', 'Kiswahili', 'biology', 'chemistry','physics', 'history', 'geography',
       'cre', 'computer', 'french', 'aviation', 'agriculture', 'music', 'homescience',
       'electricity', 'business', 'woodwork', 'art', 'building_construction','all_subjects','drawing_design','german',
     ],

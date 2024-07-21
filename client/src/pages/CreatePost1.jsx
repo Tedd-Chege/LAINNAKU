@@ -196,6 +196,7 @@ const UploadForm = () => {
             <option value="Kiswahili">Kiswahili</option>
             <option value="biology">Biology</option>
             <option value="chemistry">Chemistry</option>
+            <option value="physics">Physics</option>
             <option value="history">History</option>
             <option value="geography">Geography</option>
             <option value="cre">CRE</option>
