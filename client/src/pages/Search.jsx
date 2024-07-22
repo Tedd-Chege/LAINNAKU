@@ -137,26 +137,29 @@ export default function Search() {
               className='border-blue-500 text-black'
             >
               <option value=''>All</option>
-              <option value='math'>Math</option>
-              <option value='english'>English</option>
-              <option value='Kiswahili'>Kiswahili</option>
-              <option value='biology'>Biology</option>
-              <option value='chemistry'>Chemistry</option>
-              <option value='history'>History</option>
-              <option value='geography'>Geography</option>
-              <option value='cre'>CRE</option>
-              <option value='computer'>Computer</option>
-              <option value='french'>French</option>
-              <option value='aviation'>Aviation</option>
-              <option value='agriculture'>Agriculture</option>
-              <option value='music'>Music</option>
-              <option value='homescience'>Home Science</option>
-              <option value='electricity'>Electricity</option>
-              <option value='business'>Business</option>
-              <option value='woodwork'>Woodwork</option>
-              <option value='art'>Art</option>
-              <option value='building_construction'>Building Construction</option>
-              <option value='all_subjects'>All Subjects</option>
+              <option value="math">Math</option>
+            <option value="english">English</option>
+            <option value="Kiswahili">Kiswahili</option>
+            <option value="biology">Biology</option>
+            <option value="chemistry">Chemistry</option>
+            <option value="physics">Physics</option>
+            <option value="history">History</option>
+            <option value="geography">Geography</option>
+            <option value="cre">CRE</option>
+            <option value="computer">Computer</option>
+            <option value="french">French</option>
+            <option value="german">German</option>
+            <option value="aviation">Aviation</option>
+            <option value="agriculture">Agriculture</option>
+            <option value="music">Music</option>
+            <option value="homescience">Home Science</option>
+            <option value="electricity">Electricity</option>
+            <option value="business">Business</option>
+            <option value="woodwork">Woodwork</option>
+            <option value="art">Art</option>
+            <option value="drawing_design">Drawing and design</option>
+            <option value="building_construction">Building & Construction</option>
+            <option value="all_subjects">all subjects</option>
             </Select>
           </div>
 
