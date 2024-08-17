@@ -21,7 +21,7 @@ const postSchema = new Schema({
     enum: [
       'math', 'english', 'Kiswahili', 'biology', 'chemistry','physics', 'history', 'geography',
       'cre', 'computer', 'french', 'aviation', 'agriculture', 'music', 'homescience',
-      'electricity', 'business', 'woodwork', 'art', 'building_construction','all_subjects','drawing_design','german',
+      'electricity', 'business', 'woodwork', 'art', 'building_construction','all_subjects','drawing_design','german','Electricity','IRE',
     ],
     required: true,
   },

@@ -231,6 +231,8 @@ const UpdatePost = () => {
             <option value="drawing_design">Drawing and design</option>
             <option value="art">Art</option>
             <option value="building_construction">Building & Construction</option>
+            <option value="IRE">IRE</option>
+            <option value="Electricity">Electricity</option>
             <option value="all_subjects">all subjects</option>
           </select>
         </div>
