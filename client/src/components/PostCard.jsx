@@ -4,7 +4,7 @@ import { Card } from 'flowbite-react';
 const PostCard = ({ post }) => {
   return (
     <Card key={post._id} className="shadow-2xl">
-      <div className="p-4">
+      <div className="p-2">
         <h3 className="text-2xl font-bold text-blue-600 mb-2">{post.title}</h3>
       
         <p className="text-base"><strong>Category:</strong> {post.category}</p>
