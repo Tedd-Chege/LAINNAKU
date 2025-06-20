@@ -11,7 +11,7 @@ const HomePage = () => {
 
   return (
     <div className="">
-      {isAdmin ? (
+      {isSuperAdmin ? (
         <AdminDashboard />
       ) : (
         <UserDashboard />
