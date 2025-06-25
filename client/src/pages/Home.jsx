@@ -7,11 +7,11 @@ const HomePage = () => {
   const { currentUser } = useSelector((state) => state.user);
 
   // Check if currentUser is defined and isAdmin property is true
-  const isAdmin = currentUser?.isAdmin || currentUser?.isOverallAdmin || currentUser?.isNormalAdmin;
+  const isSuperAdmin = currentUser?.isAdmin || currentUser?.isOverallAdmin || currentUser?.isNormalAdmin;
 
   return (
     <div className="">
-      {isAdmin ? (
+      {isSuperAdmin ? (
         <AdminDashboard />
       ) : (
         <UserDashboard />
