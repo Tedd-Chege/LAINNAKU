@@ -71,16 +71,16 @@ export default function DashSidebar() {
           )}
           {currentUser && currentUser.isOverallAdmin && (
             <>
-              <Link to="/dashboard?tab=users">
+              <Link to="/dashboard?tab=usersDashboard">
                 <Sidebar.Item
-                  active={tab === 'users'}
+                  active={tab === 'usersDashboard'}
                   icon={HiOutlineUserGroup}
                   as="div"
                 >
-                  Users
+                  User Management
                 </Sidebar.Item>
               </Link>
-              <Link to="/dashboard?tab=comments">
+           {/*   <Link to="/dashboard?tab=comments">
                 <Sidebar.Item
                   active={tab === 'comments'}
                   icon={HiAnnotation}
@@ -88,7 +88,7 @@ export default function DashSidebar() {
                 >
                   Comments
                 </Sidebar.Item>
-              </Link>
+              </Link>*/}
             </>
           )}
           <Sidebar.Item

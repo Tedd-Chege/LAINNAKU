@@ -228,6 +228,12 @@ export default function DashProfile() {
           </Link>
         )}
       </form>
+      {/* Users Management link for overall admins */}
+      {currentUser && currentUser.isOverallAdmin && (
+        <div className="mt-6 flex justify-center">
+          <Link to="/users-dashboard" className="text-blue-600 underline hover:text-blue-800 font-semibold">Users Management</Link>
+        </div>
+      )}
       <div className='text-red-500 flex justify-between mt-5'>
         <span onClick={() => setShowModal(true)} className='cursor-pointer'>
           Delete Account

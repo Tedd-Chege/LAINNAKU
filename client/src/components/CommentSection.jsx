@@ -12,21 +12,22 @@ export default function CommentSection() {
   const [comments, setComments] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [loadingDelete, setLoadingDelete] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!comment) {
       setCommentError('Comment cannot be empty.');
       return;
     }
-
     if (comment.length > 200) {
       setCommentError('Comment length must be 200 characters or less.');
       return;
     }
-
+    setLoadingSubmit(true);
     try {
       const res = await fetch('/api/comment/create', {
         method: 'POST',
@@ -38,9 +39,7 @@ export default function CommentSection() {
           userId: currentUser._id,
         }),
       });
-
       const data = await res.json();
-
       if (res.ok) {
         setComment('');
         setCommentError(null);
@@ -50,11 +49,14 @@ export default function CommentSection() {
       }
     } catch (error) {
       setCommentError(error.message || 'An error occurred while creating the comment.');
+    } finally {
+      setLoadingSubmit(false);
     }
   };
 
   useEffect(() => {
     const getComments = async () => {
+      setLoadingComments(true);
       try {
         const res = await fetch('/api/comment/getPostComments');
         if (res.ok) {
@@ -63,6 +65,8 @@ export default function CommentSection() {
         }
       } catch (error) {
         console.log(error.message);
+      } finally {
+        setLoadingComments(false);
       }
     };
     getComments();
@@ -106,6 +110,7 @@ export default function CommentSection() {
 
   const handleDelete = async (commentId) => {
     setShowModal(false);
+    setLoadingDelete(true);
     try {
       if (!currentUser) {
         navigate('/sign-in');
@@ -119,6 +124,8 @@ export default function CommentSection() {
       }
     } catch (error) {
       console.log(error.message);
+    } finally {
+      setLoadingDelete(false);
     }
   };
 
@@ -159,6 +166,7 @@ export default function CommentSection() {
             className="resize-none rounded-md"
             onChange={(e) => setComment(e.target.value)}
             value={comment}
+            disabled={loadingSubmit}
           />
           <div className="flex justify-between items-center mt-2">
             <p className="text-white text-xs">
@@ -168,8 +176,9 @@ export default function CommentSection() {
               outline
               className="border border-blue-500 text-orange-500 hover:bg-orange-100"
               type="submit"
+              disabled={loadingSubmit}
             >
-              Submit
+              {loadingSubmit ? 'Submitting...' : 'Submit'}
             </Button>
           </div>
           {commentError && (
@@ -179,7 +188,9 @@ export default function CommentSection() {
           )}
         </form>
       )}
-      {comments.length === 0 ? (
+      {loadingComments ? (
+        <div className="text-center py-8">Loading comments...</div>
+      ) : comments.length === 0 ? (
         <p className="text-sm my-5">No comments yet!</p>
       ) : (
         <>
@@ -217,10 +228,10 @@ export default function CommentSection() {
               Are you sure you want to delete this comment?
             </h3>
             <div className="flex justify-center gap-4">
-              <Button color="failure" onClick={() => handleDelete(commentToDelete)}>
-                Yes, I'm sure
+              <Button color="failure" onClick={() => handleDelete(commentToDelete)} disabled={loadingDelete}>
+                {loadingDelete ? 'Deleting...' : `Yes, I'm sure`}
               </Button>
-              <Button color="gray" onClick={() => setShowModal(false)}>
+              <Button color="gray" onClick={() => setShowModal(false)} disabled={loadingDelete}>
                 No, cancel
               </Button>
             </div>

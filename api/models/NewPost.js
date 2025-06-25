@@ -55,6 +55,11 @@ const postSchema = new Schema({
     type: String,
     required: true,
   },
+    examType: {
+    type: String,
+    enum: ["opener", "midterm", "endterm"],
+    required: true // optional: ensures it must be provided
+  },
   uploadDate: {
     type: Date,
     default: Date.now,

@@ -1,8 +1,11 @@
 import React from 'react';
 import { HiMenu, HiX } from 'react-icons/hi';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import CommentSection from './CommentSection';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
+  const { currentUser } = useSelector((state) => state.user);
   return (
     <>
       <div className={`fixed mt-16  left-0 h-full bg-gray-900 text-white transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 w-64 md:w-80`}>

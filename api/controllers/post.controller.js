@@ -165,3 +165,14 @@ export const replaceFile = async (req, res) => {
     res.status(500).json({ message: 'Failed to replace file', error });
   }
 };
+
+// Get posts/files by userId
+export const getPostsByUserId = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const posts = await NewPost.find({ userId });
+    res.status(200).json(posts);
+  } catch (error) {
+    next(error);
+  }
+};

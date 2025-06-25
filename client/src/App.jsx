@@ -15,6 +15,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Search from './pages/Search';
 import PrivacyPolicy from './pages/privacypolicy';
 import TermsAndConditions from './pages/termscond';
+import GroupFiles from './pages/GroupFiles';
 
 export default function App() {
   return (
@@ -34,10 +35,11 @@ export default function App() {
         
           <Route path='/create-post1' element={<CreatePost1 />} />
           <Route path='/update-post/:postId' element={<UpdatePost />} />
+         
         </Route>
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-    
+        <Route path="/group-files" element={<GroupFiles />} />
         <Route path='/post/:postSlug' element={<PostPage />} />
       </Routes>
       <Footer />

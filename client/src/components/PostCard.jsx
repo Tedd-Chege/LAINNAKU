@@ -14,6 +14,7 @@ const PostCard = ({ post }) => {
           <>
             <p className="text-base"><strong>Term:</strong> {post.term}</p>
             <p className="text-base"><strong>Year:</strong> {post.year}</p>
+            <p className="text-base"><strong>Exam Type:</strong> {post.examType}</p>
           </>
         )}
         <p className="text-base"><strong>Description:</strong> {post.description}</p>

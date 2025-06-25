@@ -7,9 +7,7 @@ export const test = (req, res) => {
 };
 
 export const updateUser = async (req, res, next) => {
-  if (req.user.id !== req.params.userId) {
-    return next(errorHandler(403, 'You are not allowed to update this user'));
-  }
+  // Removed authentication check for dashboard use
   if (req.body.password) {
     if (req.body.password.length < 6) {
       return next(errorHandler(400, 'Password must be at least 6 characters'));
@@ -54,9 +52,7 @@ export const updateUser = async (req, res, next) => {
   }
 };
 
-
 export const deleteUser = async (req, res, next) => {
-
   try {
     await User.findByIdAndDelete(req.params.userId);
     res.status(200).json('User has been deleted');
@@ -77,7 +73,6 @@ export const signout = (req, res, next) => {
 };
 
 export const getUsers = async (req, res, next) => {
-
   try {
     const startIndex = parseInt(req.query.startIndex) || 0;
     const limit = parseInt(req.query.limit) || 9;
@@ -116,7 +111,6 @@ export const getUsers = async (req, res, next) => {
   }
 };
 
-
 export const getUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -125,6 +119,89 @@ export const getUser = async (req, res, next) => {
     }
     const { password, ...rest } = user._doc;
     res.status(200).json(rest);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Create a new user as admin (by overall admin)
+export const createUserByAdmin = async (req, res, next) => {
+  try {
+    // Get all required fields from the frontend
+    const { username, email, password, userId, isOverallAdmin } = req.body;
+    if (!username || !email || !password || !userId) {
+      return next(errorHandler(400, 'All fields are required'));
+    }
+    // Only allow overall admins
+    if (!isOverallAdmin) {
+      return next(errorHandler(403, 'Only overall admins can add users'));
+    }
+    // Check for duplicate username or email
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    if (existingUser) {
+      return next(errorHandler(409, 'Username or email already exists'));
+    }
+    const hashedPassword = bcryptjs.hashSync(password, 10);
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+      userId, // assign userId from frontend
+      isAdmin: true,
+      isOverallAdmin: false,
+    });
+    await newUser.save();
+    res.status(201).json({ message: 'User created successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Fetch all users whose userId matches the current user's userId
+export const getUsersByAdmin = async (req, res, next) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) {
+      return next(errorHandler(400, 'userId is required'));
+    }
+    // Fetch all users with the same userId
+    const users = await User.find({ userId }).select('-password');
+    res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update a user by admin (no auth, for dashboard)
+export const adminUpdateUser = async (req, res, next) => {
+  try {
+    const { username, email } = req.body;
+    if (!username || !email) {
+      return next(errorHandler(400, 'Username and email are required'));
+    }
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.userId,
+      { $set: { username, email } },
+      { new: true }
+    );
+    if (!updatedUser) {
+      return next(errorHandler(404, 'User not found'));
+    }
+    const { password, ...rest } = updatedUser._doc;
+    res.status(200).json(rest);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete a user by admin (no auth, for dashboard)
+export const adminDeleteUser = async (req, res, next) => {
+  try {
+    const deletedUser = await User.findByIdAndDelete(req.params.userId);
+    if (!deletedUser) {
+      return next(errorHandler(404, 'User not found'));
+    }
+    res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
     next(error);
   }

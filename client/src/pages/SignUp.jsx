@@ -61,10 +61,10 @@ export default function SignUp() {
         <div className='flex-1'>
           <form className='flex flex-col gap-4' onSubmit={handleSubmit}>
             <div>
-              <Label value='Your username' className='text-blue-500' />
+              <Label value='Institution name' className='text-blue-500' />
               <TextInput
                 type='text'
-                placeholder='Username'
+                placeholder='Institution name'
                 id='username'
                 onChange={handleChange}
                 className='border-blue-500'

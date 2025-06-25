@@ -11,23 +11,31 @@ export default function AllPosts() {
   const [showModal, setShowModal] = useState(false);
   const [postIdToDelete, setPostIdToDelete] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingDelete, setLoadingDelete] = useState(false);
+  const [loadingShowMore, setLoadingShowMore] = useState(false);
 
   useEffect(() => {
     const fetchPosts = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/files/getallposts`, {
-          method: 'GET',
-        });
-        const data = await res.json();
-        if (res.ok) {
-          // Sort posts by uploadDate in descending order
-          const sortedPosts = data.posts.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
-          setPosts(sortedPosts);
-          setShowMore(sortedPosts.length >= 9);
+        let res;
+        if (currentUser.isOverallAdmin && currentUser.userId) {
+          res = await fetch(`/api/files/user/${currentUser.userId}`, { method: 'GET' });
         } else {
-          console.log(data.message);
+          setPosts([]);
+          setShowMore(false);
+          setLoading(false);
+          return;
         }
+        if (!res) return;
+        const data = await res.json();
+        let postsData = res.ok ? (data.posts || data) : [];
+        // Sort posts by uploadDate in descending order
+        const sortedPosts = postsData.sort(
+          (a, b) => new Date(b.uploadDate) - new Date(a.uploadDate)
+        );
+        setPosts(sortedPosts);
+        setShowMore(sortedPosts.length >= 9);
       } catch (error) {
         console.log(error.message);
       } finally {
@@ -35,13 +43,13 @@ export default function AllPosts() {
       }
     };
 
-    if (currentUser.isOverallAdmin) {
+    if (currentUser && currentUser.isOverallAdmin && currentUser.userId) {
       fetchPosts();
     }
-  }, [currentUser.isOverallAdmin]);
+  }, [currentUser.isOverallAdmin, currentUser.userId]);
 
   const handleShowMore = async () => {
-    setLoading(true);
+    setLoadingShowMore(true);
     const startIndex = posts.length;
     try {
       const res = await fetch(
@@ -56,10 +64,14 @@ export default function AllPosts() {
       const data = await res.json();
       if (res.ok) {
         // Check for duplicates before adding new posts
-        const newPosts = data.posts.filter(post => !posts.some(existingPost => existingPost._id === post._id));
+        const newPosts = data.posts.filter(
+          (post) => !posts.some((existingPost) => existingPost._id === post._id)
+        );
         // Concatenate new posts and sort again by uploadDate in descending order
         const updatedPosts = [...posts, ...newPosts];
-        const sortedPosts = updatedPosts.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+        const sortedPosts = updatedPosts.sort(
+          (a, b) => new Date(b.uploadDate) - new Date(a.uploadDate)
+        );
         setPosts(sortedPosts);
         setShowMore(newPosts.length >= 9);
       } else {
@@ -68,7 +80,7 @@ export default function AllPosts() {
     } catch (error) {
       console.log(error.message);
     } finally {
-      setLoading(false);
+      setLoadingShowMore(false);
     }
   };
 
@@ -87,7 +99,7 @@ export default function AllPosts() {
   };
 
   const handleDeletePost = async () => {
-    setLoading(true);
+    setLoadingDelete(true);
     setShowModal(false);
     try {
       const res = await fetch(
@@ -110,7 +122,7 @@ export default function AllPosts() {
     } catch (error) {
       console.log(error.message);
     } finally {
-      setLoading(false);
+      setLoadingDelete(false);
     }
   };
 
@@ -133,6 +145,7 @@ export default function AllPosts() {
                     <>
                       <Table.HeadCell>Term</Table.HeadCell>
                       <Table.HeadCell>Year</Table.HeadCell>
+                      <Table.HeadCell>Exam Type</Table.HeadCell>
                     </>
                   )}
                   <Table.HeadCell>Download</Table.HeadCell>
@@ -150,6 +163,7 @@ export default function AllPosts() {
                         <>
                           <Table.Cell>{post.term || ' '}</Table.Cell>
                           <Table.Cell>{post.year || ' '}</Table.Cell>
+                          <Table.Cell>{post.examType || ' '}</Table.Cell>
                         </>
                       )}
                       <Table.Cell>
@@ -168,9 +182,9 @@ export default function AllPosts() {
                             setShowModal(true);
                             setPostIdToDelete(post._id);
                           }}
-                          className="font-medium text-red-500 hover:underline cursor-pointer"
+                          className={`font-medium text-red-500 hover:underline cursor-pointer ${loadingDelete ? 'opacity-50 pointer-events-none' : ''}`}
                         >
-                          Delete
+                          {loadingDelete && postIdToDelete === post._id ? 'Deleting...' : 'Delete'}
                         </span>
                       </Table.Cell>
                       <Table.Cell>
@@ -191,8 +205,9 @@ export default function AllPosts() {
             <button
               onClick={handleShowMore}
               className="w-full text-teal-500 self-center text-sm py-7"
+              disabled={loadingShowMore}
             >
-              Show more
+              {loadingShowMore ? 'Loading...' : 'Show more'}
             </button>
           )}
         </>
@@ -213,10 +228,10 @@ export default function AllPosts() {
               Are you sure you want to delete this post?
             </h3>
             <div className="flex justify-center gap-4">
-              <Button color="failure" onClick={handleDeletePost}>
-                Yes, I'm sure
+              <Button color="failure" onClick={handleDeletePost} disabled={loadingDelete}>
+                {loadingDelete ? 'Deleting...' : `Yes, I'm sure`}
               </Button>
-              <Button color="gray" onClick={() => setShowModal(false)}>
+              <Button color="gray" onClick={() => setShowModal(false)} disabled={loadingDelete}>
                 No, cancel
               </Button>
             </div>

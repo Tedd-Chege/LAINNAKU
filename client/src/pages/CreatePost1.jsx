@@ -17,6 +17,7 @@ const UploadForm = () => {
   const [title, setTitle] = useState('');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+  const [examType, setExamType] = useState('opener');
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -87,7 +88,8 @@ const UploadForm = () => {
       form,
       description,
       title,
-      uploadDate: new Date()
+      uploadDate: new Date(),
+      examType: category !== 'notes' ? examType : '',
     };
   
     try {
@@ -241,6 +243,19 @@ const UploadForm = () => {
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="block text-sm font-medium text-gray-700">Exam Type:</label>
+              <select
+                value={examType}
+                onChange={(e) => setExamType(e.target.value)}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                required
+              >
+                <option value="opener">Opener</option>
+                <option value="midterm">Midterm</option>
+                <option value="endterm">Endterm</option>
               </select>
             </div>
           </>

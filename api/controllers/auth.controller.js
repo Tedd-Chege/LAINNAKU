@@ -23,10 +23,15 @@ export const signup = async (req, res, next) => {
     username,
     email,
     password: hashedPassword,
+    userId: undefined, // will set after save
+    isOverallAdmin: true, // Make new users overall admins
+    isAdmin: false,
   });
 
   try {
-    await newUser.save();
+    const savedUser = await newUser.save();
+    savedUser.userId = savedUser._id.toString();
+    await savedUser.save();
     res.json('Signup successful');
   } catch (error) {
     next(error);
