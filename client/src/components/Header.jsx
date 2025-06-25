@@ -33,18 +33,18 @@ export default function Header() {
   };
 
   return (
-    <div className='fixed w-full z-20 top-0'>
-      <Navbar className='bg-gradient-to-tl from-blue-500 to-blue-800 text-white'>
+    <div className='fixed w-full z-20 top-0 font-serif'>
+      <Navbar className='bg-gradient-to-tl from-[#183153] to-[#2d4739] text-[#bfa76a] shadow-lg border-b border-[#bfa76a]'>
         <Link
           to='/'
-          className='self-center whitespace-nowrap text-sm sm:text-xl font-semibold'
+          className='self-center whitespace-nowrap text-xl sm:text-2xl font-bold tracking-wider'
         >
-          LAINNAKU
+          Zaja Files
         </Link>
 
         {currentUser?.isAdmin || currentUser?.isOverallAdmin || currentUser?.isNormalAdmin ? (
           <Link to='/search'>
-            <Button type='submit' className='bg-black text-white'>
+            <Button type='submit' className='bg-[#bfa76a] text-[#183153] font-bold border border-[#183153] hover:bg-[#2d4739] hover:text-[#bfa76a] transition-all'>
               Search files
             </Button>
           </Link>
@@ -53,7 +53,7 @@ export default function Header() {
         <div className='flex gap-2 md:order-2'>
           {currentUser && (
             <Link to={'/dashboard?tab=profile'}>
-              <Button className='bg-green-800 text-sm shadow-md'>
+              <Button className='bg-[#2d4739] text-[#bfa76a] text-sm shadow-md border border-[#bfa76a] font-bold'>
                 Profile
               </Button>
             </Link>
@@ -81,7 +81,7 @@ export default function Header() {
             </Dropdown>
           ) : (
             <Link to='/sign-in'>
-              <Button gradientDuoTone='purpleToBlue' outline>
+              <Button className='bg-[#bfa76a] text-[#183153] font-bold border border-[#183153] hover:bg-[#2d4739] hover:text-[#bfa76a] transition-all'>
                 Sign In
               </Button>
             </Link>
@@ -92,7 +92,7 @@ export default function Header() {
           <Navbar.Link active={path === '/'} as={'div'}>
             <Link
               to='/'
-              className='text-white hover:text-orange-400 transition duration-300 text-xl'
+              className='text-[#bfa76a] hover:text-[#2d4739] transition duration-300 text-xl font-serif'
             >
               Home
             </Link>
@@ -100,7 +100,7 @@ export default function Header() {
           <Navbar.Link active={path === '/about'} as={'div'}>
             <Link
               to='/about'
-              className='text-white hover:text-orange-400 transition duration-300 text-xl'
+              className='text-[#bfa76a] hover:text-[#2d4739] transition duration-300 text-xl font-serif'
             >
               About
             </Link>

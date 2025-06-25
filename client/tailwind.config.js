@@ -7,13 +7,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'custom-light-bg': '#f8fafc', // Custom light background color
-        'custom-dark-bg-start': '#1a202c',  // Custom dark gradient start color
-        'custom-dark-bg-end': '#2d3748',  // Custom dark gradient end color
-        // Add more custom colors if needed
+        'custom-light-bg': '#f5f5f3', // Old money off-white
+        'custom-dark-bg-start': '#183153',  // Old money navy
+        'custom-dark-bg-end': '#2d4739',  // Old money green
+        'custom-gold': '#bfa76a', // Old money gold
+      },
+      fontFamily: {
+        serif: ['Merriweather', 'serif'],
       },
       backgroundImage: theme => ({
-        'dark-gradient': 'linear-gradient(to right, #1a202c, #2d3748)',
+        'dark-gradient': 'linear-gradient(to right, #183153, #2d4739)',
       }),
     },
   },

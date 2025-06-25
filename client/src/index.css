@@ -5,6 +5,57 @@
 
 body {
   height: 100vh;
+  font-family: 'Merriweather', serif;
+  background-color: #f5f5f3;
+}
+
+button, .btn, .flowbite-btn, .flowbite-react__button {
+  color: #fff !important;
+  background-color: #8b5c2a !important; /* warm brown */
+  border-radius: 0.5rem !important;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  box-shadow: 0 2px 8px rgba(139, 92, 42, 0.08);
+  transition: background 0.2s, color 0.2s;
+}
+button:hover, .btn:hover, .flowbite-btn:hover, .flowbite-react__button:hover {
+  background-color: #a9743a !important; /* lighter, golden brown */
+  color: #fff !important;
+}
+
+input, textarea, select {
+  background-color: #f8f5f0;
+  border-radius: 0.375rem;
+  border: 1px solid #bfa76a;
+  color: #2d1b06;
+}
+
+.card, .bg-white, .rounded-2xl, .shadow-2xl {
+  background: linear-gradient(135deg, #f5f5f3 80%, #e6d3b3 100%);
+  box-shadow: 0 4px 24px rgba(139, 92, 42, 0.10);
+  border-radius: 1.25rem;
+}
+
+/* Cosy log cabin accent */
+.cabin-accent {
+  background: linear-gradient(120deg, #e6d3b3 0%, #bfa76a 100%);
+  color: #4b2e09;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1.5rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(139, 92, 42, 0.08);
+}
+
+.post-content h1, .post-content h2 {
+  font-family: 'Merriweather', serif;
+}
+
+.post-content a {
+  color: #8b5c2a;
+}
+
+.post-content a:hover {
+  color: #a9743a;
 }
 
 .ql-editor {
@@ -18,18 +69,18 @@ body {
 .post-content h1 {
   font-size: 1.5rem;
   font-weight: 600;
-  font-family: sans-serif;
+  font-family: 'Merriweather', serif;
   margin: 1.5rem 0;
 }
 
 .post-content h2 {
   font-size: 1.4rem;
-  font-family: sans-serif;
+  font-family: 'Merriweather', serif;
   margin: 1.5rem 0;
 }
 
 .post-content a {
-  color: rgb(73, 149, 199);
+  color: #183153;
   text-decoration: none;
 }
 
@@ -38,7 +89,7 @@ body {
 }
 
 .dark .post-content a {
-  color: red;
+  color: #bfa76a;
 }
 
 
