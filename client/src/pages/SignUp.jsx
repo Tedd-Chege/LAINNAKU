@@ -8,11 +8,11 @@ export default function SignUp() {
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.username || !formData.email || !formData.password) {
@@ -40,81 +40,78 @@ export default function SignUp() {
       setLoading(false);
     }
   };
-  
+
   return (
-    <div className='min-h-screen mt-20 bg-gray-50'>
-      <div className='flex p-3 max-w-3xl mx-auto flex-col md:flex-row md:items-center gap-5'>
+    <div className="min-h-screen bg-[#fafafa] flex items-center justify-center px-4 pt-16 pb-10">
+      <div className="flex flex-col md:flex-row gap-10 w-full max-w-3xl bg-white border border-[#ececec] shadow-2xl rounded-3xl p-8 md:p-12">
         {/* Left */}
-        <div className='flex-1'>
-          <Link to='/' className='font-bold text-4xl'>
-            <span className='px-2 py-1 bg-gradient-to-r from-blue-500 via-green-500 to-orange-500 rounded-lg text-white'>
-              Lainnaku
-            </span>
-            Website
+        <div className="flex-1 flex flex-col justify-center mb-6 md:mb-0">
+          <Link to="/" className="font-extrabold text-4xl text-[#222] hover:underline">
+            <span className="px-2 py-1 bg-[#ff385c] rounded-xl text-white mr-2">Zaja</span>
+            Files
           </Link>
-          <p className='text-sm mt-5'>
-            Welcome to Lainnaku! Sign up with your email and password or with Google.
+          <p className="text-base mt-7 text-[#484848] leading-relaxed">
+            Welcome to Zaja Files! Sign up with your institution name, email, and password, or use Google for fast access.
           </p>
         </div>
-        
+
         {/* Right */}
-        <div className='flex-1'>
-          <form className='flex flex-col gap-4' onSubmit={handleSubmit}>
+        <div className="flex-1">
+          <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
             <div>
-              <Label value='Institution name' className='text-blue-500' />
+              <Label value="Institution name" className="text-[#ff385c] font-semibold" />
               <TextInput
-                type='text'
-                placeholder='Institution name'
-                id='username'
+                type="text"
+                placeholder="Institution name"
+                id="username"
                 onChange={handleChange}
-                className='border-blue-500'
+                className="border-2 border-[#ececec] rounded-xl text-[#222] bg-white focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20"
               />
             </div>
             <div>
-              <Label value='Your email' className='text-blue-500' />
+              <Label value="Your email" className="text-[#ff385c] font-semibold" />
               <TextInput
-                type='email'
-                placeholder='name@company.com'
-                id='email'
+                type="email"
+                placeholder="name@school.com"
+                id="email"
                 onChange={handleChange}
-                className='border-blue-500'
+                className="border-2 border-[#ececec] rounded-xl text-[#222] bg-white focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20"
               />
             </div>
             <div>
-              <Label value='Your password' className='text-blue-500' />
+              <Label value="Your password" className="text-[#ff385c] font-semibold" />
               <TextInput
-                type='password'
-                placeholder='Password'
-                id='password'
+                type="password"
+                placeholder="Password"
+                id="password"
                 onChange={handleChange}
-                className='border-blue-500'
+                className="border-2 border-[#ececec] rounded-xl text-[#222] bg-white focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20"
               />
             </div>
             <Button
-              gradientDuoTone='blueToGreen'
-              type='submit'
+              type="submit"
               disabled={loading}
-              className='bg-gradient-to-r from-blue-500 to-green-500'
+              className="w-full mt-1 rounded-xl bg-[#ff385c] hover:bg-[#e31c5f] transition text-white text-lg font-bold py-3 shadow focus:ring-2 focus:ring-[#ff385c]/30 active:scale-95 border-none"
             >
               {loading ? (
                 <>
-                  <Spinner size='sm' />
-                  <span className='pl-3'>Loading...</span>
+                  <Spinner size="sm" />
+                  <span className="pl-3">Loading...</span>
                 </>
               ) : (
-                'Sign Up'
+                "Sign Up"
               )}
             </Button>
-            <OAuth />
+          
           </form>
-          <div className='flex gap-2 text-sm mt-5'>
+          <div className="flex gap-2 text-sm mt-7">
             <span>Have an account?</span>
-            <Link to='/sign-in' className='text-orange-500'>
+            <Link to="/sign-in" className="text-[#ff385c] font-semibold hover:underline">
               Sign In
             </Link>
           </div>
           {errorMessage && (
-            <Alert className='mt-5' color='failure'>
+            <Alert className="mt-6" color="failure">
               {errorMessage}
             </Alert>
           )}

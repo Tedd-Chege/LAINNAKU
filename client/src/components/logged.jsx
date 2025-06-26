@@ -21,7 +21,7 @@ export default function AllPosts() {
 
   useEffect(() => {
     if (currentUser && currentUser.userId) {
-      fetchPosts(0, currentUser.userId); // Fetch initial posts for this user
+      fetchPosts(0, currentUser.userId);
     }
   }, [currentUser]);
 
@@ -34,7 +34,7 @@ export default function AllPosts() {
         const newPosts = data.filter(post => !fetchedPostIds.current.has(post._id));
         newPosts.forEach(post => fetchedPostIds.current.add(post._id));
         setPosts((prevPosts) => [...prevPosts, ...newPosts]);
-        setShowMore(false); // No pagination for user-specific posts
+        setShowMore(false);
         setStartIndex(index + limit);
       } else {
         console.error(data.message);
@@ -53,7 +53,7 @@ export default function AllPosts() {
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-  // Group posts by main category (exams, marking_scheme, others), then by year-term-examType for exams/marking_scheme
+  // Group logic (unchanged)
   const grouped = { exams: {}, marking_scheme: {}, others: [] };
   posts.forEach(post => {
     if (post.category === 'exams') {
@@ -70,15 +70,16 @@ export default function AllPosts() {
   });
 
   return (
-    <div className="flex">
-      <div className={`flex-1 mt-4 transition-all duration-300 ${sidebarOpen ? 'ml-0 md:ml-80' : 'ml-5 md:ml-80'}`}>
-        <div className="p-4">
+    <div className="min-h-screen bg-[#fafafa] flex">
+      {/* If you want to add Sidebar, place here */}
+      <div className={`flex-1 mt-4 transition-all duration-300 px-2 sm:px-6 md:px-12 ${sidebarOpen ? 'ml-0 md:ml-80' : 'ml-0 md:ml-80'}`}>
+        <div className="p-2 md:p-4">
           <button className="md:hidden mb-4" onClick={toggleSidebar}>
-            <HiMenu className="h-6 w-6 text-gray-700" />
+            <HiMenu className="h-7 w-7 text-gray-700" />
           </button>
           <div className="p-1">
             {loading ? (
-              <div className="text-center text-orange-600">Loading...</div>
+              <div className="text-center text-gray-500 font-medium animate-pulse">Loading...</div>
             ) : (
               <div>
                 {Object.keys(grouped).length > 0 ? (
@@ -86,8 +87,10 @@ export default function AllPosts() {
                     {/* Exams Group */}
                     {Object.keys(grouped.exams).length > 0 && (
                       <>
-                        <h2 className="text-xl font-bold uppercase mb-4 mt-8">Exams</h2>
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <h2 className="text-2xl font-extrabold uppercase mb-4 mt-10 text-black tracking-wide">
+                          Exams
+                        </h2>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                           {Object.entries(grouped.exams).map(([key, groupInfo]) => (
                             <GroupedPostCard
                               key={key}
@@ -102,8 +105,10 @@ export default function AllPosts() {
                     {/* Marking Scheme Group */}
                     {Object.keys(grouped.marking_scheme).length > 0 && (
                       <>
-                        <h2 className="text-xl font-bold uppercase mb-4 mt-8">Marking Schemes</h2>
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <h2 className="text-2xl font-extrabold uppercase mb-4 mt-10 text-black tracking-wide">
+                          Marking Schemes
+                        </h2>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                           {Object.entries(grouped.marking_scheme).map(([key, groupInfo]) => (
                             <GroupedPostCard
                               key={key}
@@ -118,8 +123,10 @@ export default function AllPosts() {
                     {/* Other Categories */}
                     {grouped.others.length > 0 && (
                       <>
-                        <h2 className="text-xl font-bold uppercase mb-4 mt-8">Other Files</h2>
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <h2 className="text-2xl font-extrabold uppercase mb-4 mt-10 text-black tracking-wide">
+                          Other Files
+                        </h2>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                           {grouped.others.map((post) => (
                             <PostCard key={post._id} post={post} />
                           ))}
@@ -128,11 +135,14 @@ export default function AllPosts() {
                     )}
                   </div>
                 ) : (
-                  <p className="text-center">No posts available!</p>
+                  <p className="text-center text-gray-500">No posts available!</p>
                 )}
                 {showMore && (
                   <div className="text-center mt-4">
-                    <Button className="bg-blue-500 hover:bg-blue-600 text-white" onClick={fetchMorePosts}>
+                    <Button
+                      className="bg-[#ff385c] hover:bg-[#e31c5f] text-white font-bold px-6 py-2 rounded-xl shadow-md transition active:scale-95"
+                      onClick={fetchMorePosts}
+                    >
                       Show More
                     </Button>
                   </div>

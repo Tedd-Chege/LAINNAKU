@@ -25,6 +25,7 @@ export default function UsersDashboard() {
     if (currentUser && currentUser.isOverallAdmin) {
       fetchUsers();
     }
+    // eslint-disable-next-line
   }, [currentUser]);
 
   const fetchUsers = async () => {
@@ -139,86 +140,129 @@ export default function UsersDashboard() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">Users Management</h2>
-      <form className="mb-6 space-y-2" onSubmit={handleAddUser}>
-        <div>
-          <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} className="border p-2 rounded w-full" required />
+    <div className="max-w-3xl mx-auto p-6 font-sans">
+      <h2 className="text-3xl font-bold mb-6 text-black tracking-tight">Users Management</h2>
+      <form className="mb-8 space-y-3 bg-white p-6 rounded-2xl shadow-md border border-[#ececec]" onSubmit={handleAddUser}>
+        <div className="flex flex-col md:flex-row gap-3">
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            className="rounded-xl border border-[#ececec] px-4 py-2 text-base text-black focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 transition w-full"
+            required
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            className="rounded-xl border border-[#ececec] px-4 py-2 text-base text-black focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 transition w-full"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            className="rounded-xl border border-[#ececec] px-4 py-2 text-base text-black focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 transition w-full"
+            required
+          />
+          <button
+            type="submit"
+            className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold px-6 py-2 rounded-xl transition active:scale-95 w-full md:w-auto"
+            disabled={loadingAdd}
+          >
+            {loadingAdd ? 'Adding...' : 'Add User'}
+          </button>
         </div>
-        <div>
-          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="border p-2 rounded w-full" required />
-        </div>
-        <div>
-          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="border p-2 rounded w-full" required />
-        </div>
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded" disabled={loadingAdd}>
-          {loadingAdd ? 'Adding...' : 'Add User'}
-        </button>
-        {error && <p className="text-red-600">{error}</p>}
-        {success && <p className="text-green-600">{success}</p>}
+        {error && <p className="text-[#ff385c] font-bold mt-2">{error}</p>}
+        {success && <p className="text-green-700 font-bold mt-2">{success}</p>}
       </form>
-      <h3 className="text-xl font-semibold mb-2">All Users</h3>
+      <h3 className="text-2xl font-semibold mb-4 text-black">All Users</h3>
       {loadingUsers ? (
-        <div className="text-center py-8">Loading users...</div>
+        <div className="text-center py-8 text-[#ff385c] animate-pulse">Loading users...</div>
       ) : (
-        <table className="w-full border">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="p-2 border">Username</th>
-              <th className="p-2 border">Email</th>
-              <th className="p-2 border">Role</th>
-              <th className="p-2 border">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map(user => (
-              <tr key={user._id}>
-                <td className="p-2 border">
-                  {editingUserId === user._id ? (
-                    <input
-                      type="text"
-                      value={editUsername}
-                      onChange={e => setEditUsername(e.target.value)}
-                      className="border p-1 rounded w-full"
-                    />
-                  ) : (
-                    user.username
-                  )}
-                </td>
-                <td className="p-2 border">
-                  {editingUserId === user._id ? (
-                    <input
-                      type="email"
-                      value={editEmail}
-                      onChange={e => setEditEmail(e.target.value)}
-                      className="border p-1 rounded w-full"
-                    />
-                  ) : (
-                    user.email
-                  )}
-                </td>
-                <td className="p-2 border">{user.isOverallAdmin ? 'Overall Admin' : user.isAdmin ? 'Admin' : 'User'}</td>
-                <td className="p-2 border flex gap-2">
-                  {editingUserId === user._id ? (
-                    <>
-                      <button onClick={() => saveEditUser(user._id)} className="bg-green-500 text-white px-2 py-1 rounded" disabled={loadingEditId === user._id}>
-                        {loadingEditId === user._id ? 'Saving...' : 'Save'}
-                      </button>
-                      <button onClick={cancelEditUser} className="bg-gray-400 text-white px-2 py-1 rounded" disabled={loadingEditId === user._id}>Cancel</button>
-                    </>
-                  ) : (
-                    <>
-                      <button onClick={() => startEditUser(user)} className="bg-blue-500 text-white px-2 py-1 rounded" disabled={loadingEditId || loadingDeleteId === user._id}>Edit</button>
-                      <button onClick={() => handleDeleteUser(user._id)} className="bg-red-500 text-white px-2 py-1 rounded" disabled={loadingDeleteId === user._id}>
-                        {loadingDeleteId === user._id ? 'Deleting...' : 'Delete'}
-                      </button>
-                    </>
-                  )}
-                </td>
+        <div className="overflow-x-auto bg-white rounded-2xl shadow-md border border-[#ececec]">
+          <table className="w-full text-left rounded-2xl">
+            <thead>
+              <tr className="bg-[#fafafa] border-b border-[#ececec]">
+                <th className="p-3 text-black">Username</th>
+                <th className="p-3 text-black">Email</th>
+                <th className="p-3 text-black">Role</th>
+                <th className="p-3 text-black">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {users.map(user => (
+                <tr key={user._id} className="border-b border-[#ececec] hover:bg-[#fff5f7] transition">
+                  <td className="p-3 text-black">
+                    {editingUserId === user._id ? (
+                      <input
+                        type="text"
+                        value={editUsername}
+                        onChange={e => setEditUsername(e.target.value)}
+                        className="rounded-xl border border-[#ececec] px-2 py-1 text-black focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 transition w-full"
+                      />
+                    ) : (
+                      user.username
+                    )}
+                  </td>
+                  <td className="p-3 text-black">
+                    {editingUserId === user._id ? (
+                      <input
+                        type="email"
+                        value={editEmail}
+                        onChange={e => setEditEmail(e.target.value)}
+                        className="rounded-xl border border-[#ececec] px-2 py-1 text-black focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 transition w-full"
+                      />
+                    ) : (
+                      user.email
+                    )}
+                  </td>
+                  <td className="p-3 text-black">{user.isOverallAdmin ? 'Overall Admin' : user.isAdmin ? 'Admin' : 'User'}</td>
+                  <td className="p-3 flex gap-2">
+                    {editingUserId === user._id ? (
+                      <>
+                        <button
+                          onClick={() => saveEditUser(user._id)}
+                          className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold px-3 py-1 rounded-xl transition active:scale-95"
+                          disabled={loadingEditId === user._id}
+                        >
+                          {loadingEditId === user._id ? 'Saving...' : 'Save'}
+                        </button>
+                        <button
+                          onClick={cancelEditUser}
+                          className="bg-[#fafafa] border border-[#ececec] text-black font-bold px-3 py-1 rounded-xl transition hover:bg-[#f3f3f3]"
+                          disabled={loadingEditId === user._id}
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => startEditUser(user)}
+                          className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold px-3 py-1 rounded-xl transition active:scale-95"
+                          disabled={loadingEditId || loadingDeleteId === user._id}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user._id)}
+                          className="bg-black border-2 border-[#ff9900] font-bold px-3 py-1 rounded-xl transition hover:bg-[#fff7ed] active:scale-95 text-orange-500"
+                          disabled={loadingDeleteId === user._id}
+                        >
+                          {loadingDeleteId === user._id ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

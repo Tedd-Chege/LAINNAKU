@@ -13,9 +13,7 @@ export default function Header() {
 
   const handleSignout = async () => {
     try {
-      const res = await fetch('/api/user/signout', {
-        method: 'POST',
-      });
+      const res = await fetch('/api/user/signout', { method: 'POST' });
       const data = await res.json();
       if (!res.ok) {
         console.log(data.message);
@@ -33,27 +31,38 @@ export default function Header() {
   };
 
   return (
-    <div className='fixed w-full z-20 top-0 font-serif'>
-      <Navbar className='bg-gradient-to-tl from-[#183153] to-[#2d4739] text-[#bfa76a] shadow-lg border-b border-[#bfa76a]'>
+    <div className="fixed w-full z-20 top-0 font-sans">
+      <Navbar className="bg-white text-[#222] shadow border-b border-[#ececec] px-4 py-2">
         <Link
-          to='/'
-          className='self-center whitespace-nowrap text-xl sm:text-2xl font-bold tracking-wider'
+          to="/"
+          className="self-center whitespace-nowrap text-2xl md:text-3xl font-extrabold tracking-tight text-[#ff385c] hover:underline"
         >
-          Zaja Files
+          Zaja<span className="text-[#222]"> Files</span>
         </Link>
 
-        {currentUser?.isAdmin || currentUser?.isOverallAdmin || currentUser?.isNormalAdmin ? (
-          <Link to='/search'>
-            <Button type='submit' className='bg-[#bfa76a] text-[#183153] font-bold border border-[#183153] hover:bg-[#2d4739] hover:text-[#bfa76a] transition-all'>
-              Search files
-            </Button>
-          </Link>
-        ) : null}
+        {/* Optional: search bar */}
+        {/* 
+        <form onSubmit={handleSubmit} className="hidden md:flex ml-6">
+          <input
+            type="text"
+            placeholder="Search files..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="rounded-xl px-4 py-2 border border-[#ececec] focus:ring-2 focus:ring-[#ff385c]/20 mr-2"
+          />
+          <Button
+            type="submit"
+            className="bg-[#ff385c] hover:bg-[#e31c5f] text-white rounded-xl px-5 py-2 font-semibold shadow-sm"
+          >
+            Search
+          </Button>
+        </form>
+        */}
 
-        <div className='flex gap-2 md:order-2'>
+        <div className="flex gap-2 md:order-2 items-center">
           {currentUser && (
             <Link to={'/dashboard?tab=profile'}>
-              <Button className='bg-[#2d4739] text-[#bfa76a] text-sm shadow-md border border-[#bfa76a] font-bold'>
+              <Button className="bg-[#ff385c] hover:bg-[#e31c5f] text-white rounded-xl text-sm font-semibold shadow border-none px-5 py-2 transition active:scale-95">
                 Profile
               </Button>
             </Link>
@@ -63,15 +72,11 @@ export default function Header() {
             <Dropdown
               arrowIcon={false}
               inline
-              label={
-                <Avatar alt='user' img={currentUser.profilePicture} rounded />
-              }
+              label={<Avatar alt="user" img={currentUser.profilePicture} rounded />}
             >
               <Dropdown.Header>
-                <span className='block text-sm'>@{currentUser.username}</span>
-                <span className='block text-sm font-medium truncate'>
-                  {currentUser.email}
-                </span>
+                <span className="block text-sm font-semibold">@{currentUser.username}</span>
+                <span className="block text-sm font-medium truncate">{currentUser.email}</span>
               </Dropdown.Header>
               <Link to={'/dashboard?tab=profile'}>
                 <Dropdown.Item>Profile</Dropdown.Item>
@@ -80,31 +85,48 @@ export default function Header() {
               <Dropdown.Item onClick={handleSignout}>Sign out</Dropdown.Item>
             </Dropdown>
           ) : (
-            <Link to='/sign-in'>
-              <Button className='bg-[#bfa76a] text-[#183153] font-bold border border-[#183153] hover:bg-[#2d4739] hover:text-[#bfa76a] transition-all'>
-                Sign In
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link to="/sign-in">
+                <Button className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold rounded-xl px-6 py-2 shadow border-none transition active:scale-95">
+                  Sign In
+                </Button>
+              </Link>
+              <Link to="/sign-up">
+                <Button className=" border-2 border-[#2563eb] text-[#2563eb] font-semibold rounded-xl px-6 py-2 shadow transition hover:bg-[#2563eb] hover:text-white active:scale-95">
+                  Sign Up
+                </Button>
+              </Link>
+            </div>
           )}
           <Navbar.Toggle />
         </div>
         <Navbar.Collapse>
-          <Navbar.Link active={path === '/'} as={'div'}>
+          <Navbar.Link active={path === '/'} as="div">
             <Link
-              to='/'
-              className='text-[#bfa76a] hover:text-[#2d4739] transition duration-300 text-xl font-serif'
+              to="/"
+              className="text-[#222] hover:text-[#ff385c] transition duration-200 text-lg font-semibold"
             >
               Home
             </Link>
           </Navbar.Link>
-          <Navbar.Link active={path === '/about'} as={'div'}>
+          <Navbar.Link active={path === '/about'} as="div">
             <Link
-              to='/about'
-              className='text-[#bfa76a] hover:text-[#2d4739] transition duration-300 text-xl font-serif'
+              to="/about"
+              className="text-[#222] hover:text-[#ff385c] transition duration-200 text-lg font-semibold"
             >
               About
             </Link>
           </Navbar.Link>
+          {(currentUser?.isAdmin || currentUser?.isOverallAdmin || currentUser?.isNormalAdmin) && (
+            <Navbar.Link as="div">
+              <Link
+                to="/search"
+                className="text-[#ff385c] font-semibold hover:underline text-lg"
+              >
+                Search Files
+              </Link>
+            </Navbar.Link>
+          )}
         </Navbar.Collapse>
       </Navbar>
     </div>

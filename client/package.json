@@ -32,6 +32,7 @@
     "firebase": "^10.12.2",
     "flowbite": "^2.3.0",
     "flowbite-react": "^0.7.0",
+    "framer-motion": "^12.19.1",
     "moment": "^2.29.4",
     "pdfjs-dist": "^4.3.136",
     "react": "^18.2.0",

@@ -1,18 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 
+
+
 body {
-  height: 100vh;
-  font-family: 'Merriweather', serif;
-  background-color: #f5f5f3;
+  font-family: 'Inter', sans-serif;
+  background: #1e293b;
+  color: #f1f5f9;
 }
+
 
 button, .btn, .flowbite-btn, .flowbite-react__button {
   color: #fff !important;
-  background-color: #8b5c2a !important; /* warm brown */
-  border-radius: 0.5rem !important;
+  background-color: #4477e4 ;
   font-weight: 700;
   letter-spacing: 0.03em;
   box-shadow: 0 2px 8px rgba(139, 92, 42, 0.08);
@@ -90,6 +93,20 @@ input, textarea, select {
 
 .dark .post-content a {
   color: #bfa76a;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.18);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  transition: box-shadow 0.2s;
+}
+.glass-card:hover {
+  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.22);
 }
 
 

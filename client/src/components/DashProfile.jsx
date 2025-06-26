@@ -43,6 +43,7 @@ export default function DashProfile() {
     if (imageFile) {
       uploadImage();
     }
+    // eslint-disable-next-line
   }, [imageFile]);
 
   const uploadImage = async () => {
@@ -96,9 +97,7 @@ export default function DashProfile() {
       dispatch(updateStart());
       const res = await fetch(`/api/user/update/${currentUser._id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
       const data = await res.json();
@@ -135,9 +134,7 @@ export default function DashProfile() {
 
   const handleSignout = async () => {
     try {
-      const res = await fetch('/api/user/signout', {
-        method: 'POST',
-      });
+      const res = await fetch('/api/user/signout', { method: 'POST' });
       const data = await res.json();
       if (!res.ok) {
         console.log(data.message);
@@ -150,25 +147,25 @@ export default function DashProfile() {
   };
 
   return (
-    <div className='max-w-lg mx-auto p-3 w-full '>
-      <h1 className='my-7 text-center font-semibold text-3xl'>Profile</h1>
-      <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
+    <div className="max-w-lg mx-auto p-3 w-full font-sans">
+      <h1 className="my-7 text-center font-extrabold text-3xl text-[#222]">Profile</h1>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5 bg-white border border-[#ececec] rounded-3xl p-7 shadow-lg">
         <input
-          type='file'
-          accept='image/*'
+          type="file"
+          accept="image/*"
           onChange={handleImageChange}
           ref={filePickerRef}
           hidden
         />
         <div
-          className='relative w-32 h-32 self-center cursor-pointer shadow-md overflow-hidden rounded-full'
+          className="relative w-32 h-32 self-center cursor-pointer shadow-lg overflow-hidden rounded-full border-4 border-[#ff385c] group"
           onClick={() => filePickerRef.current.click()}
         >
           {imageFileUploadProgress && (
             <CircularProgressbar
               value={imageFileUploadProgress || 0}
               text={`${imageFileUploadProgress}%`}
-              strokeWidth={5}
+              strokeWidth={6}
               styles={{
                 root: {
                   width: '100%',
@@ -176,105 +173,117 @@ export default function DashProfile() {
                   position: 'absolute',
                   top: 0,
                   left: 0,
+                  zIndex: 10,
                 },
                 path: {
-                  stroke: `rgba(62, 152, 199, ${imageFileUploadProgress / 100})`,
+                  stroke: `#ff385c`,
+                },
+                text: {
+                  fill: '#ff385c',
+                  fontSize: '18px',
+                  fontWeight: 700,
                 },
               }}
             />
           )}
           <img
             src={imageFileUrl || currentUser.profilePicture}
-            alt='user'
-            className={`rounded-full w-full h-full object-cover border-8 border-[lightgray] ${
+            alt="user"
+            className={`rounded-full w-full h-full object-cover border-4 border-white transition-all duration-300 ${
               imageFileUploadProgress && imageFileUploadProgress < 100 && 'opacity-60'
-            }`}
+            } group-hover:opacity-80`}
           />
         </div>
-        {imageFileUploadError && <Alert color='failure'>{imageFileUploadError}</Alert>}
+        {imageFileUploadError && <Alert color="failure">{imageFileUploadError}</Alert>}
         <TextInput
-          type='text'
-          id='username'
-          placeholder='username'
+          type="text"
+          id="username"
+          placeholder="username"
           defaultValue={currentUser.username}
           onChange={handleChange}
+          className="border-2 border-[#ececec] rounded-xl text-[#222] bg-white focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20"
         />
         <TextInput
-          type='email'
-          id='email'
-          placeholder='email'
+          type="email"
+          id="email"
+          placeholder="email"
           defaultValue={currentUser.email}
           onChange={handleChange}
+          className="border-2 border-[#ececec] rounded-xl text-[#222] bg-white focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20"
         />
         <TextInput
-          type='password'
-          id='password'
-          placeholder='password'
+          type="password"
+          id="password"
+          placeholder="password"
           onChange={handleChange}
+          className="border-2 border-[#ececec] rounded-xl text-[#222] bg-white focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20"
         />
         <Button
-          type='submit'
-          className='bg-orange-500'
-          outline
+          type="submit"
+          className="bg-[#ff385c] hover:bg-[#e31c5f] w-full rounded-xl text-white font-bold py-3 shadow transition active:scale-95 border-none"
           disabled={loading || imageFileUploading}
         >
           {loading ? 'Loading...' : 'Update'}
         </Button>
         {(currentUser.isAdmin || currentUser.isOverallAdmin) && (
           <Link to={'/create-post1'}>
-            <Button type='button' className='w-full bg-green-600'>
+            <Button
+              type="button"
+              className="w-full bg-[#ff385c] hover:bg-[#e31c5f] rounded-xl text-white font-bold py-3 shadow transition active:scale-95 mt-1 border-none"
+            >
               Create a post
             </Button>
           </Link>
         )}
       </form>
-      {/* Users Management link for overall admins */}
-      {currentUser && currentUser.isOverallAdmin && (
-        <div className="mt-6 flex justify-center">
-          <Link to="/users-dashboard" className="text-blue-600 underline hover:text-blue-800 font-semibold">Users Management</Link>
-        </div>
-      )}
-      <div className='text-red-500 flex justify-between mt-5'>
-        <span onClick={() => setShowModal(true)} className='cursor-pointer'>
+    
+      <div className="flex justify-between mt-7">
+        <span
+          onClick={() => setShowModal(true)}
+          className="cursor-pointer text-[#ff385c] font-bold underline hover:text-[#e31c5f] text-base transition"
+        >
           Delete Account
         </span>
-        <span onClick={handleSignout} className='cursor-pointer'>
+        <span
+          onClick={handleSignout}
+          className="cursor-pointer text-[#ff385c] font-bold underline hover:text-[#e31c5f] text-base transition"
+        >
           Sign Out
         </span>
       </div>
       {updateUserSuccess && (
-        <Alert color='success' className='mt-5'>
+        <Alert color="success" className="mt-5">
           {updateUserSuccess}
         </Alert>
       )}
       {updateUserError && (
-        <Alert color='failure' className='mt-5'>
+        <Alert color="failure" className="mt-5">
           {updateUserError}
         </Alert>
       )}
       {error && (
-        <Alert color='failure' className='mt-5'>
+        <Alert color="failure" className="mt-5">
           {error}
         </Alert>
       )}
-      <Modal show={showModal} onClose={() => setShowModal(false)} popup size='md'>
+      <Modal show={showModal} onClose={() => setShowModal(false)} popup size="md">
         <Modal.Header />
-        <Modal.Body>
-          <div className='text-center'>
-            <HiOutlineExclamationCircle className='h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto' />
-            <h3 className='mb-5 text-lg text-gray-500 dark:text-gray-400'>
+        <ModalBody>
+          <div className="text-center">
+            <HiOutlineExclamationCircle className="h-14 w-14 text-[#ff385c] mb-4 mx-auto" />
+            <h3 className="mb-5 text-lg text-gray-500">
               Are you sure you want to delete your account?
             </h3>
-            <div className='flex justify-center gap-4'>
-              <Button color='failure' onClick={handleDeleteUser}>
+            <div className="flex justify-center gap-4">
+              <Button color="failure" onClick={handleDeleteUser} className="rounded-xl px-5">
                 Yes, I'm sure
               </Button>
-              <Button color='gray' onClick={() => setShowModal(false)}>
+              <Button color="gray" onClick={() => setShowModal(false)} className="rounded-xl px-5">
                 No, cancel
               </Button>
             </div>
           </div>
-        </Modal.Body>
+        </ModalBody>
       </Modal>
     </div>
   );
