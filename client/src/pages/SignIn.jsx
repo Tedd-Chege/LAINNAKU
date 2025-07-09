@@ -38,7 +38,7 @@ export default function SignIn() {
       if (res.ok) {
         dispatch(signInSuccess(data));
         if (data.isOverallAdmin) {
-          navigate("/dashboard?tab=usersDashboard");
+          navigate("/");
         } else {
           navigate('/');
         }

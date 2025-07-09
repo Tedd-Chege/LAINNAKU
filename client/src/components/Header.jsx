@@ -41,7 +41,7 @@ export default function Header() {
             to="/"
             className="self-center whitespace-nowrap text-2xl md:text-3xl font-extrabold tracking-tight text-[#e23131] hover:underline flex items-center gap-2"
           >
-            <HiOutlineDocument className="text-[#ff385c] text-3xl md:text-4xl" />
+            
             Zaja<span className="text-[#222]"> Files</span>
           </Link>
         </div>
