@@ -103,7 +103,7 @@ export default function AllPosts() {
         style={{
           marginLeft: sidebarExpanded
             ? `${sidebarWidthExpanded + 40}px` // 224 + 40 = 264px
-            : `${sidebarWidthCollapsed + 100}px`, // 64 + 40 = 104px
+            : `${sidebarWidthCollapsed + 10}px`, // 64 + 40 = 104px
           transition: 'margin-left 0.3s cubic-bezier(.4,0,.2,1)',
         }}
       >
