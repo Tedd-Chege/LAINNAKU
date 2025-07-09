@@ -40,7 +40,7 @@ export default function SignIn() {
         if (data.isOverallAdmin) {
           navigate("/dashboard?tab=usersDashboard");
         } else {
-          navigate('/logged');
+          navigate('/');
         }
       }
     } catch (error) {

@@ -140,9 +140,9 @@ export default function UsersDashboard() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 font-sans">
+    <div className="max-w-3xl mx-auto p-4 sm:p-6 font-sans w-full">
       <h2 className="text-3xl font-bold mb-6 text-black tracking-tight">Users Management</h2>
-      <form className="mb-8 space-y-3 bg-white p-6 rounded-2xl shadow-md border border-[#ececec]" onSubmit={handleAddUser}>
+      <form className="mb-8 space-y-3 bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-[#ececec]" onSubmit={handleAddUser}>
         <div className="flex flex-col md:flex-row gap-3">
           <input
             type="text"
@@ -180,88 +180,166 @@ export default function UsersDashboard() {
         {success && <p className="text-green-700 font-bold mt-2">{success}</p>}
       </form>
       <h3 className="text-2xl font-semibold mb-4 text-black">All Users</h3>
+
       {loadingUsers ? (
         <div className="text-center py-8 text-[#ff385c] animate-pulse">Loading users...</div>
       ) : (
-        <div className="overflow-x-auto bg-white rounded-2xl shadow-md border border-[#ececec]">
-          <table className="w-full text-left rounded-2xl">
-            <thead>
-              <tr className="bg-[#fafafa] border-b border-[#ececec]">
-                <th className="p-3 text-black">Username</th>
-                <th className="p-3 text-black">Email</th>
-                <th className="p-3 text-black">Role</th>
-                <th className="p-3 text-black">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(user => (
-                <tr key={user._id} className="border-b border-[#ececec] hover:bg-[#fff5f7] transition">
-                  <td className="p-3 text-black">
-                    {editingUserId === user._id ? (
-                      <input
-                        type="text"
-                        value={editUsername}
-                        onChange={e => setEditUsername(e.target.value)}
-                        className="rounded-xl border border-[#ececec] px-2 py-1 text-black focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 transition w-full"
-                      />
-                    ) : (
-                      user.username
-                    )}
-                  </td>
-                  <td className="p-3 text-black">
-                    {editingUserId === user._id ? (
-                      <input
-                        type="email"
-                        value={editEmail}
-                        onChange={e => setEditEmail(e.target.value)}
-                        className="rounded-xl border border-[#ececec] px-2 py-1 text-black focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 transition w-full"
-                      />
-                    ) : (
-                      user.email
-                    )}
-                  </td>
-                  <td className="p-3 text-black">{user.isOverallAdmin ? 'Overall Admin' : user.isAdmin ? 'Admin' : 'User'}</td>
-                  <td className="p-3 flex gap-2">
-                    {editingUserId === user._id ? (
-                      <>
-                        <button
-                          onClick={() => saveEditUser(user._id)}
-                          className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold px-3 py-1 rounded-xl transition active:scale-95"
-                          disabled={loadingEditId === user._id}
-                        >
-                          {loadingEditId === user._id ? 'Saving...' : 'Save'}
-                        </button>
-                        <button
-                          onClick={cancelEditUser}
-                          className="bg-[#fafafa] border border-[#ececec] text-black font-bold px-3 py-1 rounded-xl transition hover:bg-[#f3f3f3]"
-                          disabled={loadingEditId === user._id}
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => startEditUser(user)}
-                          className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold px-3 py-1 rounded-xl transition active:scale-95"
-                          disabled={loadingEditId || loadingDeleteId === user._id}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteUser(user._id)}
-                          className="bg-black border-2 border-[#ff9900] font-bold px-3 py-1 rounded-xl transition hover:bg-[#fff7ed] active:scale-95 text-orange-500"
-                          disabled={loadingDeleteId === user._id}
-                        >
-                          {loadingDeleteId === user._id ? 'Deleting...' : 'Delete'}
-                        </button>
-                      </>
-                    )}
-                  </td>
+        <div className="bg-white rounded-2xl shadow-md border border-[#ececec] w-full">
+          {/* Desktop Table */}
+          <div className="hidden sm:block overflow-x-auto w-full">
+            <table className="min-w-full table-fixed rounded-2xl">
+              <thead>
+                <tr className="bg-[#fafafa] border-b border-[#ececec]">
+                  <th className="p-2 sm:p-3 text-black w-1/4">Username</th>
+                  <th className="p-2 sm:p-3 text-black w-1/3">Email</th>
+                  <th className="p-2 sm:p-3 text-black w-1/6">Role</th>
+                  <th className="p-2 sm:p-3 text-black w-1/4">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {users.map(user => (
+                  <tr key={user._id} className="border-b border-[#ececec] hover:bg-[#fff5f7] transition">
+                    <td className="p-2 sm:p-3 text-black truncate max-w-[120px]" title={user.username}>
+                      {editingUserId === user._id ? (
+                        <input
+                          type="text"
+                          value={editUsername}
+                          onChange={e => setEditUsername(e.target.value)}
+                          className="rounded-xl border border-[#ececec] px-2 py-1 text-black focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 transition w-full"
+                        />
+                      ) : (
+                        user.username
+                      )}
+                    </td>
+                    <td className="p-2 sm:p-3 text-black truncate max-w-[180px]" title={user.email}>
+                      {editingUserId === user._id ? (
+                        <input
+                          type="email"
+                          value={editEmail}
+                          onChange={e => setEditEmail(e.target.value)}
+                          className="rounded-xl border border-[#ececec] px-2 py-1 text-black focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 transition w-full"
+                        />
+                      ) : (
+                        user.email
+                      )}
+                    </td>
+                    <td className="p-2 sm:p-3 text-black">{user.isOverallAdmin ? 'Overall Admin' : user.isAdmin ? 'Admin' : 'User'}</td>
+                    <td className="p-2 sm:p-3 flex flex-col sm:flex-row gap-2">
+                      {editingUserId === user._id ? (
+                        <>
+                          <button
+                            onClick={() => saveEditUser(user._id)}
+                            className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold px-3 py-1 rounded-xl transition active:scale-95"
+                            disabled={loadingEditId === user._id}
+                          >
+                            {loadingEditId === user._id ? 'Saving...' : 'Save'}
+                          </button>
+                          <button
+                            onClick={cancelEditUser}
+                            className="bg-[#fafafa] border border-[#ececec] text-black font-bold px-3 py-1 rounded-xl transition hover:bg-[#f3f3f3]"
+                            disabled={loadingEditId === user._id}
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => startEditUser(user)}
+                            className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold px-3 py-1 rounded-xl transition active:scale-95"
+                            disabled={loadingEditId || loadingDeleteId === user._id}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(user._id)}
+                            className="bg-black border-2 border-[#ff9900] font-bold px-3 py-1 rounded-xl transition hover:bg-[#fff7ed] active:scale-95 text-orange-500"
+                            disabled={loadingDeleteId === user._id}
+                          >
+                            {loadingDeleteId === user._id ? 'Deleting...' : 'Delete'}
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Mobile Cards */}
+          <div className="sm:hidden w-full flex flex-col gap-3">
+            {users.map(user => (
+              <div key={user._id} className="border border-[#ececec] rounded-xl p-3 mb-1 shadow-sm bg-[#fafafa]">
+                <div className="mb-1">
+                  <span className="font-semibold text-black">Username:</span>
+                  <span className="ml-2">{editingUserId === user._id ? (
+                    <input
+                      type="text"
+                      value={editUsername}
+                      onChange={e => setEditUsername(e.target.value)}
+                      className="rounded-xl border border-[#ececec] px-2 py-1 text-black focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 transition w-full mt-1"
+                    />
+                  ) : (
+                    user.username
+                  )}</span>
+                </div>
+                <div className="mb-1">
+                  <span className="font-semibold text-black">Email:</span>
+                  <span className="ml-2">{editingUserId === user._id ? (
+                    <input
+                      type="email"
+                      value={editEmail}
+                      onChange={e => setEditEmail(e.target.value)}
+                      className="rounded-xl border border-[#ececec] px-2 py-1 text-black focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 transition w-full mt-1"
+                    />
+                  ) : (
+                    user.email
+                  )}</span>
+                </div>
+                <div className="mb-1">
+                  <span className="font-semibold text-black">Role:</span>
+                  <span className="ml-2">{user.isOverallAdmin ? 'Overall Admin' : user.isAdmin ? 'Admin' : 'User'}</span>
+                </div>
+                <div className="flex gap-2 mt-2">
+                  {editingUserId === user._id ? (
+                    <>
+                      <button
+                        onClick={() => saveEditUser(user._id)}
+                        className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold px-3 py-1 rounded-xl transition active:scale-95"
+                        disabled={loadingEditId === user._id}
+                      >
+                        {loadingEditId === user._id ? 'Saving...' : 'Save'}
+                      </button>
+                      <button
+                        onClick={cancelEditUser}
+                        className="bg-[#fafafa] border border-[#ececec] text-black font-bold px-3 py-1 rounded-xl transition hover:bg-[#f3f3f3]"
+                        disabled={loadingEditId === user._id}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => startEditUser(user)}
+                        className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold px-3 py-1 rounded-xl transition active:scale-95"
+                        disabled={loadingEditId || loadingDeleteId === user._id}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteUser(user._id)}
+                        className="bg-black border-2 border-[#ff9900] font-bold px-3 py-1 rounded-xl transition hover:bg-[#fff7ed] active:scale-95 text-orange-500"
+                        disabled={loadingDeleteId === user._id}
+                      >
+                        {loadingDeleteId === user._id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

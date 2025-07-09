@@ -63,11 +63,9 @@ export default function AllPosts() {
       );
       const data = await res.json();
       if (res.ok) {
-        // Check for duplicates before adding new posts
         const newPosts = data.posts.filter(
           (post) => !posts.some((existingPost) => existingPost._id === post._id)
         );
-        // Concatenate new posts and sort again by uploadDate in descending order
         const updatedPosts = [...posts, ...newPosts];
         const sortedPosts = updatedPosts.sort(
           (a, b) => new Date(b.uploadDate) - new Date(a.uploadDate)
@@ -92,9 +90,7 @@ export default function AllPosts() {
   }, {});
 
   const truncateText = (text, length) => {
-    if (text.length <= length) {
-      return text;
-    }
+    if (text.length <= length) return text;
     return text.substring(0, length) + '...';
   };
 
@@ -127,78 +123,145 @@ export default function AllPosts() {
   };
 
   return (
-    <div className="table-auto overflow-x-scroll md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
+    <div className="w-full max-w-6xl mx-auto px-1 sm:px-4 py-3">
       {loading ? (
         <p>Loading...</p>
       ) : currentUser.isOverallAdmin && Object.keys(groupedPosts).length > 0 ? (
         <>
           {Object.keys(groupedPosts).map((category) => (
-            <div key={category}>
+            <div key={category} className="mb-10">
               <h2 className="text-xl font-bold my-4">{category}</h2>
-              <Table hoverable className="shadow-md">
-                <Table.Head>
-                  <Table.HeadCell>Title</Table.HeadCell>
-                  <Table.HeadCell>Category</Table.HeadCell>
-                  <Table.HeadCell>Form</Table.HeadCell>
-                  <Table.HeadCell>Subject</Table.HeadCell>
-                  {category !== 'notes' && (
-                    <>
-                      <Table.HeadCell>Term</Table.HeadCell>
-                      <Table.HeadCell>Year</Table.HeadCell>
-                      <Table.HeadCell>Exam Type</Table.HeadCell>
-                    </>
-                  )}
-                  <Table.HeadCell>Download</Table.HeadCell>
-                  <Table.HeadCell>Delete</Table.HeadCell>
-                  <Table.HeadCell>Edit</Table.HeadCell>
-                </Table.Head>
-                {groupedPosts[category].map((post) => (
-                  <Table.Body key={post._id} className="divide-y">
-                    <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                      <Table.Cell>{post.title || ' '}</Table.Cell>
-                      <Table.Cell>{post.category || ' '}</Table.Cell>
-                      <Table.Cell>{post.form || ' '}</Table.Cell>
-                      <Table.Cell>{post.subject || ' '}</Table.Cell>
-                      {category !== 'notes' && (
-                        <>
-                          <Table.Cell>{post.term || ' '}</Table.Cell>
-                          <Table.Cell>{post.year || ' '}</Table.Cell>
-                          <Table.Cell>{post.examType || ' '}</Table.Cell>
-                        </>
-                      )}
-                      <Table.Cell>
-                        <a
-                          href={post.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-teal-500 underline"
-                        >
-                          Download
-                        </a>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <span
-                          onClick={() => {
-                            setShowModal(true);
-                            setPostIdToDelete(post._id);
-                          }}
-                          className={`font-medium text-red-500 hover:underline cursor-pointer ${loadingDelete ? 'opacity-50 pointer-events-none' : ''}`}
-                        >
-                          {loadingDelete && postIdToDelete === post._id ? 'Deleting...' : 'Delete'}
-                        </span>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Link
-                          className="text-teal-500 hover:underline"
-                          to={`/update-post/${post._id}`}
-                        >
-                          Edit
-                        </Link>
-                      </Table.Cell>
-                    </Table.Row>
+              {/* Desktop Table */}
+              <div className="hidden sm:block overflow-x-auto rounded-2xl shadow bg-white">
+                <Table hoverable className="w-full min-w-[600px]">
+                  <Table.Head>
+                    <Table.HeadCell>Title</Table.HeadCell>
+                    <Table.HeadCell className="hidden sm:table-cell">Category</Table.HeadCell>
+                    <Table.HeadCell>Form</Table.HeadCell>
+                    <Table.HeadCell>Subject</Table.HeadCell>
+                    {category !== 'notes' && (
+                      <>
+                        <Table.HeadCell className="hidden md:table-cell">Term</Table.HeadCell>
+                        <Table.HeadCell>Year</Table.HeadCell>
+                        <Table.HeadCell className="hidden md:table-cell">Exam Type</Table.HeadCell>
+                      </>
+                    )}
+                    <Table.HeadCell>Download</Table.HeadCell>
+                    <Table.HeadCell>Delete</Table.HeadCell>
+                    <Table.HeadCell className="hidden sm:table-cell">Edit</Table.HeadCell>
+                  </Table.Head>
+                  <Table.Body>
+                    {groupedPosts[category].map((post) => (
+                      <Table.Row key={post._id} className="bg-white">
+                        <Table.Cell>{truncateText(post.title || ' ', 30)}</Table.Cell>
+                        <Table.Cell className="hidden sm:table-cell">{truncateText(post.category || ' ', 20)}</Table.Cell>
+                        <Table.Cell>{truncateText(post.form || ' ', 20)}</Table.Cell>
+                        <Table.Cell>{truncateText(post.subject || ' ', 20)}</Table.Cell>
+                        {category !== 'notes' && (
+                          <>
+                            <Table.Cell className="hidden md:table-cell">{post.term || ' '}</Table.Cell>
+                            <Table.Cell>{post.year || ' '}</Table.Cell>
+                            <Table.Cell className="hidden md:table-cell">{truncateText(post.examType || ' ', 18)}</Table.Cell>
+                          </>
+                        )}
+                        <Table.Cell>
+                          <a
+                            href={post.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-teal-500 underline"
+                          >
+                            Download
+                          </a>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <span
+                            onClick={() => {
+                              setShowModal(true);
+                              setPostIdToDelete(post._id);
+                            }}
+                            className={`font-medium text-red-500 hover:underline cursor-pointer ${loadingDelete ? 'opacity-50 pointer-events-none' : ''}`}
+                          >
+                            {loadingDelete && postIdToDelete === post._id ? 'Deleting...' : 'Delete'}
+                          </span>
+                        </Table.Cell>
+                        <Table.Cell className="hidden sm:table-cell">
+                          <Link
+                            className="text-teal-500 hover:underline"
+                            to={`/update-post/${post._id}`}
+                          >
+                            Edit
+                          </Link>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
                   </Table.Body>
+                </Table>
+              </div>
+              {/* Mobile Cards */}
+              <div className="sm:hidden flex flex-col gap-4">
+                {groupedPosts[category].map((post) => (
+                  <div key={post._id} className="bg-white rounded-xl shadow p-3">
+                    <div>
+                      <span className="font-semibold">Title: </span>
+                      <span>{truncateText(post.title || ' ', 30)}</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold">Category: </span>
+                      <span>{truncateText(post.category || ' ', 20)}</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold">Form: </span>
+                      <span>{truncateText(post.form || ' ', 20)}</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold">Subject: </span>
+                      <span>{truncateText(post.subject || ' ', 20)}</span>
+                    </div>
+                    {category !== 'notes' && (
+                      <>
+                        <div>
+                          <span className="font-semibold">Term: </span>
+                          <span>{post.term || ' '}</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold">Year: </span>
+                          <span>{post.year || ' '}</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold">Exam Type: </span>
+                          <span>{truncateText(post.examType || ' ', 18)}</span>
+                        </div>
+                      </>
+                    )}
+                    <div className="flex gap-3 mt-2">
+                      <a
+                        href={post.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-teal-500 underline"
+                      >
+                        Download
+                      </a>
+                      <span
+                        onClick={() => {
+                          setShowModal(true);
+                          setPostIdToDelete(post._id);
+                        }}
+                        className={`font-medium text-red-500 hover:underline cursor-pointer ${loadingDelete ? 'opacity-50 pointer-events-none' : ''}`}
+                      >
+                        {loadingDelete && postIdToDelete === post._id ? 'Deleting...' : 'Delete'}
+                      </span>
+                      <Link
+                        className="text-teal-500 hover:underline"
+                        to={`/update-post/${post._id}`}
+                      >
+                        Edit
+                      </Link>
+                    </div>
+                  </div>
                 ))}
-              </Table>
+              </div>
             </div>
           ))}
           {showMore && (

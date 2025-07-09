@@ -1,25 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { app } from '../firebase';
-import { useSelector } from 'react-redux';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { app } from "../firebase";
+import DashSidebar from '../components/DashSidebar';
+
+// --- Styling from UploadForm ---
+const fieldClass =
+  "block w-full px-5 py-3 text-base text-[#222] bg-white border-2 border-[#ececec] rounded-xl focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 focus:shadow-lg outline-none transition placeholder:font-normal placeholder:text-[#000000]";
+
+const labelClass = "block font-semibold text-base text-[#222] mb-2";
+
+const buttonClass =
+  "w-full mt-2 rounded-xl bg-[#ff385c] hover:bg-[#d7043c] active:scale-95 transition text-white text-lg font-bold py-3 shadow-md focus:ring-2 focus:ring-[#ff385c]/30";
+
+const cardClass =
+  "bg-white border border-[#ececec] rounded-3xl shadow-xl w-full max-w-xl p-6 md:p-10 flex flex-col gap-10 ml-10";
+// ---
 
 const UpdatePost = () => {
-  const {postId } = useParams();
+  const { postId } = useParams();
   const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.user);
+
   const [file, setFile] = useState(null);
-  const [fileUrl, setFileUrl] = useState('');
-  const [category, setCategory] = useState('notes');
-  const [subject, setSubject] = useState('math');
-  const [year, setYear] = useState('');
-  const [term, setTerm] = useState('');
-  const [form, setForm] = useState('1');
-  const [description, setDescription] = useState('');
-  const [title, setTitle] = useState('');
+  const [fileUrl, setFileUrl] = useState("");
+  const [category, setCategory] = useState("notes");
+  const [subject, setSubject] = useState("math");
+  const [year, setYear] = useState("");
+  const [term, setTerm] = useState("");
+  const [form, setForm] = useState("");
+  const [description, setDescription] = useState("");
+  const [title, setTitle] = useState("");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+  const [examType, setExamType] = useState("opener");
 
   useEffect(() => {
     const fetchPostData = async () => {
@@ -34,37 +50,29 @@ const UpdatePost = () => {
         setForm(post.form);
         setDescription(post.description);
         setTitle(post.title);
+        setExamType(post.examType || "opener");
       } catch (error) {
-        console.error('Error fetching post data:', error);
+        setError("Error fetching post data");
       }
     };
-
     fetchPostData();
+    // eslint-disable-next-line
   }, [postId]);
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
+  const handleFileChange = (e) => setFile(e.target.files[0]);
 
   const storeFile = async (file) => {
     const storage = getStorage(app);
     const fileName = new Date().getTime() + file.name;
     const storageRef = ref(storage, fileName);
     const uploadTask = uploadBytesResumable(storageRef, file);
-
     return new Promise((resolve, reject) => {
       uploadTask.on(
-        'state_changed',
+        "state_changed",
         () => {},
-        (error) => {
-          reject(error);
-        },
+        (error) => reject(error),
         () => {
-          getDownloadURL(uploadTask.snapshot.ref)
-            .then((url) => {
-              resolve(url);
-            })
-            .catch(reject);
+          getDownloadURL(uploadTask.snapshot.ref).then(resolve).catch(reject);
         }
       );
     });
@@ -72,228 +80,306 @@ const UpdatePost = () => {
 
   const handleFileSubmit = async (e) => {
     e.preventDefault();
-
     if (!file) {
-      setError('Please select a file to upload');
+      setError("Please select a file to upload");
       return;
     }
-
     setUploading(true);
     setError(null);
-
     try {
       const url = await storeFile(file);
       setFileUrl(url);
       setFile(null);
       setUploading(false);
     } catch (error) {
-      setError('File upload failed (10MB max per file)');
+      setError("File upload failed (10MB max per file)");
       setUploading(false);
     }
   };
 
-  const handleRemoveFile = () => {
-    setFileUrl('');
-  };
+  const handleRemoveFile = () => setFileUrl("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!fileUrl) {
-      setError('You must upload a file');
+      setError("You must upload a file");
       return;
     }
-
     const formData = {
       fileUrl,
       category,
       subject,
-      year: category === 'notes' ? '' : year,
-      term: category === 'notes' ? '' : term,
+      year: category === "notes" ? "" : year,
+      term: category === "notes" ? "" : term,
       form,
       description,
       title,
+      examType: category !== "notes" ? examType : "",
     };
-
     try {
       await axios.put(`/api/files/updatepost/${postId}`, formData, {
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${currentUser.token}`, // Assuming currentUser has a token property
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${currentUser.token}`,
         },
       });
-
-      alert('Post updated successfully');
-      navigate('/dashboard?tab=profile');
+      alert("Post updated successfully");
+      navigate("/dashboard?tab=profile");
     } catch (error) {
-      console.error(error);
-      setError('Failed to update post');
+      setError("Failed to update post");
     }
   };
 
+  // Responsive margin for main content
+  const [windowWidth, setWindowWidth] = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 1024));
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(typeof window !== 'undefined' ? window.innerWidth : 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  const marginLeft = windowWidth >= 1024 ? 224 : 0;
+
   return (
-    <div className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center">Update Post</h2>
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label className="block text-sm font-medium text-gray-700">Title:</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label className="block text-sm font-medium text-gray-700">Select File:</label>
-          <input
-            type="file"
-            onChange={handleFileChange}
-            className="mt-1 block w-full text-sm text-gray-500 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-          
-          />
-          <button
-            type="button"
-            onClick={handleFileSubmit}
-            disabled={uploading}
-            className="mt-2 w-full py-2 px-4 bg-green-600 text-white font-bold rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-          >
-            {uploading ? 'Uploading...' : 'Upload'}
-          </button>
-          {error && <p className="text-red-700 mt-2">{error}</p>}
-        </div>
-        <div className="form-group">
-          <label className="block text-sm font-medium text-gray-700">Uploaded File:</label>
-          {fileUrl && (
-            <div className="flex justify-between border items-center p-3">
-              <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                {file ? file.name : 'Uploaded File'}
-              </a>
-              <button
-                type="button"
-                className="p-2 text-red-700 rounded-lg hover:opacity-80"
-                onClick={handleRemoveFile}
-              >
-                Delete
-              </button>
-            </div>
-          )}
-        </div>
-        <div className="form-group">
-          <label className="block text-sm font-medium text-gray-700">Category:</label>
-          <select
-            value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
-              if (e.target.value === 'notes') {
-                setYear('');
-                setTerm('');
-              }
-            }}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            required
-          >
-            <option value="notes">Notes</option>
-            <option value="exams">Exams</option>
-            <option value="results">Results</option>
-            <option value="marking_scheme">Marking Scheme</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label className="block text-sm font-medium text-gray-700">Subject:</label>
-          <select
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            required
-          >
-            <option value="math">Math</option>
-            <option value="english">English</option>
-            <option value="Kiswahili">Kiswahili</option>
-            <option value="biology">Biology</option>
-            <option value="chemistry">Chemistry</option>
-            <option value="physics">Physics</option>
-            <option value="geography">Geography</option>
-            <option value="history">History</option>
-            <option value="cre">CRE</option>
-            <option value="business">Business</option>
-            <option value="computer">Computer</option>
-            <option value="french">French</option>
-            <option value="german">German</option>
-            <option value="aviation">Aviation</option>
-            <option value="agriculture">Agriculture</option>
-            <option value="music">Music</option>
-            <option value="homescience">Home Science</option>
-            <option value="electricity">Electricity</option>
-            <option value="business">Business</option>
-            <option value="woodwork">Woodwork</option>
-            <option value="drawing_design">Drawing and design</option>
-            <option value="art">Art</option>
-            <option value="building_construction">Building & Construction</option>
-            <option value="IRE">IRE</option>
-            <option value="Electricity">Electricity</option>
-            <option value="all_subjects">all subjects</option>
-          </select>
-        </div>
-        {category !== 'notes' && (
-          <>
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">Year:</label>
+    <div className="min-h-screen bg-[#fafafa] flex mt-14 relative">
+      {/* Sidebar - always on left for desktop, overlays on mobile */}
+      <aside
+        className={`
+          fixed md:static top-18 left-0 h-[calc(100vh-3.5rem)] z-30
+          transition-all duration-300 border-r border-[#fffdfd] backdrop-blur-lg
+           shadow-2xl bg-white/90
+          block
+        `}
+        style={{
+          minHeight: 'calc(100vh - 3.5rem)',
+          flexShrink: 0,
+        }}
+      >
+        <DashSidebar />
+      </aside>
+      {/* Main content */}
+      <div
+        className="flex-1  flex items-center justify-center px-2 py-10"
+        style={{
+          marginLeft,
+          transition: 'margin-left 0.3s cubic-bezier(.4,0,.2,1)'
+        }}
+      >
+        <div className={cardClass}>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-[#222] text-center mb-2 tracking-tight">
+            Update File
+          </h1>
+          <form className="space-y-8" onSubmit={handleSubmit} autoComplete="off">
+            {/* Title */}
+            <div>
+              <label className={labelClass} htmlFor="title">Title</label>
               <input
-                type="number"
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                id="title"
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 required
+                placeholder="Enter file title"
+                aria-label="File title"
+                className={fieldClass}
               />
             </div>
-            <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">Term:</label>
-              <select
-                value={term}
-                onChange={(e) => setTerm(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                required
+            {/* File Upload */}
+            <div>
+              <label className={labelClass} htmlFor="file">Select File</label>
+              <input
+                id="file"
+                type="file"
+                onChange={handleFileChange}
+                className={fieldClass}
+                aria-label="Select file to upload"
+              />
+              <button
+                type="button"
+                onClick={handleFileSubmit}
+                disabled={uploading}
+                className={buttonClass + (uploading ? " opacity-60 cursor-wait" : "")}
+                aria-label="Upload file"
               >
+                {uploading ? "Uploading..." : "Upload"}
+              </button>
+           {/* Uploaded File Section */}
+{fileUrl && (
+  <div>
+    <label className={labelClass}>Uploaded File:</label>
+    <div className="flex justify-between items-center border rounded-xl px-4 py-3 mt-1 bg-[#f8f9fa]">
+      <a
+        href={fileUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 underline font-semibold break-all"
+      >
+        Uploaded File
+      </a>
+      <button
+        type="button"
+        onClick={handleRemoveFile}
+        className="text-[#ff385c] hover:text-[#d7043c] font-semibold"
+      >
+        Delete
+      </button>
+    </div>
+  </div>
+)}
+
+              {error && <p className="text-base font-semibold text-[#ff385c] mt-2">{error}</p>}
+            </div>
+            {/* Category */}
+            <div>
+              <label className={labelClass} htmlFor="category">Category</label>
+              <select
+                id="category"
+                value={category}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  if (e.target.value === "notes") {
+                    setYear("");
+                    setTerm("");
+                  }
+                }}
+                className={fieldClass}
+                required
+                aria-label="Select category"
+              >
+                <option value="notes">Notes</option>
+                <option value="exams">Exams</option>
+                <option value="results">Results</option>
+                <option value="marking_scheme">Marking Scheme</option>
+              </select>
+            </div>
+            {/* Subject */}
+            <div>
+              <label className={labelClass} htmlFor="subject">Subject</label>
+              <select
+                id="subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className={fieldClass}
+                required
+                aria-label="Select subject"
+              >
+                <option value="math">Math</option>
+                <option value="english">English</option>
+                <option value="Kiswahili">Kiswahili</option>
+                <option value="biology">Biology</option>
+                <option value="chemistry">Chemistry</option>
+                <option value="physics">Physics</option>
+                <option value="history">History</option>
+                <option value="geography">Geography</option>
+                <option value="cre">CRE</option>
+                <option value="computer">Computer</option>
+                <option value="french">French</option>
+                <option value="german">German</option>
+                <option value="aviation">Aviation</option>
+                <option value="agriculture">Agriculture</option>
+                <option value="music">Music</option>
+                <option value="homescience">Home Science</option>
+                <option value="electricity">Electricity</option>
+                <option value="business">Business</option>
+                <option value="woodwork">Woodwork</option>
+                <option value="art">Art</option>
+                <option value="drawing_design">Drawing and design</option>
+                <option value="building_construction">Building & Construction</option>
+                <option value="IRE">IRE</option>
+                <option value="Electricity">Electricity</option>
+                <option value="all_subjects">All subjects</option>
+              </select>
+            </div>
+            {/* Conditional fields for non-notes */}
+            {category !== "notes" && (
+              <>
+                <div>
+                  <label className={labelClass} htmlFor="year">Year</label>
+                  <input
+                    id="year"
+                    type="number"
+                    value={year}
+                    onChange={(e) => setYear(e.target.value)}
+                    required
+                    placeholder="e.g. 2023"
+                    aria-label="Enter year"
+                    className={fieldClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass} htmlFor="term">Term</label>
+                  <select
+                    id="term"
+                    value={term}
+                    onChange={(e) => setTerm(e.target.value)}
+                    className={fieldClass}
+                    required
+                    aria-label="Select term"
+                  >
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass} htmlFor="examType">Exam Type</label>
+                  <select
+                    id="examType"
+                    value={examType}
+                    onChange={(e) => setExamType(e.target.value)}
+                    className={fieldClass}
+                    required
+                    aria-label="Select exam type"
+                  >
+                    <option value="opener">Opener</option>
+                    <option value="midterm">Midterm</option>
+                    <option value="endterm">Endterm</option>
+                  </select>
+                </div>
+              </>
+            )}
+            {/* Form */}
+            <div>
+              <label className={labelClass} htmlFor="form">Form</label>
+              <select
+                id="form"
+                value={form}
+                onChange={(e) => setForm(e.target.value)}
+                className={fieldClass}
+                required
+                aria-label="Select form"
+              >
+                <option value=""></option>
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
+                <option value="4">4</option>
               </select>
             </div>
-          </>
-        )}
-        <div className="form-group">
-          <label className="block text-sm font-medium text-gray-700">Form:</label>
-          <select
-            value={form}
-            onChange={(e) => setForm(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            required
-          >
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-          </select>
+            {/* Description */}
+            <div>
+              <label className={labelClass} htmlFor="description">Description</label>
+              <textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className={fieldClass + " min-h-[90px] resize-none "}
+                required
+                placeholder="Describe the file..."
+                aria-label="File description"
+              />
+            </div>
+            {/* Submit */}
+            <button
+              type="submit"
+              className={buttonClass}
+              aria-label="Submit file update"
+            >
+              Update
+            </button>
+            {error && <p className="text-base font-semibold text-[#ff385c] mt-2">{error}</p>}
+          </form>
         </div>
-        <div className="form-group">
-          <label className="block text-sm font-medium text-gray-700">Description:</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            required
-          ></textarea>
-        </div>
-        <button
-          type="submit"
-          className="w-full py-2 px-4 bg-blue-600 text-white font-bold rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Update Post
-        </button>
-        {error && <p className="text-red-700 mt-2">{error}</p>}
-      </form>
+      </div>
     </div>
   );
 };
