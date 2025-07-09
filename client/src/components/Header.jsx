@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Avatar, Button, Dropdown, Navbar } from 'flowbite-react';
 import { HiHome } from 'react-icons/hi';
+import { HiOutlineDocument } from 'react-icons/hi';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { signoutSuccess } from '../redux/user/userSlice';
@@ -38,8 +39,9 @@ export default function Header() {
         <div className="flex items-center flex-shrink-0">
           <Link
             to="/"
-            className="self-center whitespace-nowrap text-2xl md:text-3xl font-extrabold tracking-tight text-[#e23131] hover:underline"
+            className="self-center whitespace-nowrap text-2xl md:text-3xl font-extrabold tracking-tight text-[#e23131] hover:underline flex items-center gap-2"
           >
+            <HiOutlineDocument className="text-[#ff385c] text-3xl md:text-4xl" />
             Zaja<span className="text-[#222]"> Files</span>
           </Link>
         </div>
