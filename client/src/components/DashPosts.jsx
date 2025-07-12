@@ -1,3 +1,4 @@
+// AllPosts.jsx
 import { Modal, Table, Button } from 'flowbite-react';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -20,19 +21,16 @@ export default function AllPosts() {
       try {
         let res;
         if (currentUser.isOverallAdmin && currentUser.userId) {
-          res = await fetch(`/api/files/user/${currentUser.userId}`, { method: 'GET' });
+          res = await fetch(`/api/files/user/${currentUser.userId}`);
         } else {
           setPosts([]);
           setShowMore(false);
           setLoading(false);
           return;
         }
-        if (!res) return;
         const data = await res.json();
-        let postsData = res.ok ? (data.posts || data) : [];
-        const sortedPosts = postsData.sort(
-          (a, b) => new Date(b.uploadDate) - new Date(a.uploadDate)
-        );
+        const postsData = res.ok ? (data.posts || data) : [];
+        const sortedPosts = postsData.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
         setPosts(sortedPosts);
         setShowMore(sortedPosts.length >= 9);
       } catch (error) {
@@ -42,17 +40,16 @@ export default function AllPosts() {
       }
     };
 
-    if (currentUser && currentUser.isOverallAdmin && currentUser.userId) {
+    if (currentUser?.isOverallAdmin && currentUser.userId) {
       fetchPosts();
     }
-  }, [currentUser.isOverallAdmin, currentUser.userId]);
+  }, [currentUser]);
 
   const handleShowMore = async () => {
     setLoadingShowMore(true);
     const startIndex = posts.length;
     try {
       const res = await fetch(`/api/files/getallposts?startIndex=${startIndex}`, {
-        method: 'GET',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -63,9 +60,7 @@ export default function AllPosts() {
           (post) => !posts.some((existingPost) => existingPost._id === post._id)
         );
         const updatedPosts = [...posts, ...newPosts];
-        const sortedPosts = updatedPosts.sort(
-          (a, b) => new Date(b.uploadDate) - new Date(a.uploadDate)
-        );
+        const sortedPosts = updatedPosts.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
         setPosts(sortedPosts);
         setShowMore(newPosts.length >= 9);
       } else {
@@ -76,17 +71,6 @@ export default function AllPosts() {
     } finally {
       setLoadingShowMore(false);
     }
-  };
-
-  const groupedPosts = posts.reduce((acc, post) => {
-    acc[post.category] = acc[post.category] || [];
-    acc[post.category].push(post);
-    return acc;
-  }, {});
-
-  const truncateText = (text, length) => {
-    if (text.length <= length) return text;
-    return text.substring(0, length) + '...';
   };
 
   const handleDeletePost = async () => {
@@ -112,97 +96,113 @@ export default function AllPosts() {
     }
   };
 
+  const groupedPosts = posts.reduce((acc, post) => {
+    acc[post.category] = acc[post.category] || [];
+    acc[post.category].push(post);
+    return acc;
+  }, {});
+
   return (
-    <div className="w-full max-w-6xl mx-auto px-1 sm:px-4 py-3">
+    <div className="w-full max-w-6xl mx-auto px-2 py-4">
       {loading ? (
         <p>Loading...</p>
-      ) : currentUser.isOverallAdmin && Object.keys(groupedPosts).length > 0 ? (
-        <>
-          {Object.keys(groupedPosts).map((category) => (
-            <div key={category} className="mb-10">
-              <h2 className="text-xl font-bold my-4">{category}</h2>
-              <div className="hidden sm:block overflow-x-auto rounded-2xl shadow bg-white">
-                <Table hoverable className="w-full min-w-[600px]">
-                  <Table.Head>
-                    <Table.HeadCell>Title</Table.HeadCell>
-                    <Table.HeadCell className="hidden sm:table-cell">Category</Table.HeadCell>
-                    <Table.HeadCell>Form</Table.HeadCell>
-                    <Table.HeadCell>Subject</Table.HeadCell>
-                    {category !== 'notes' && (
-                      <>
-                        <Table.HeadCell className="hidden md:table-cell">Term</Table.HeadCell>
-                        <Table.HeadCell>Year</Table.HeadCell>
-                        <Table.HeadCell className="hidden md:table-cell">Exam Type</Table.HeadCell>
-                      </>
-                    )}
-                    {category === 'exams' && (
-                      <Table.HeadCell>Status</Table.HeadCell>
-                    )}
-                    <Table.HeadCell>Delete</Table.HeadCell>
-                    <Table.HeadCell className="hidden sm:table-cell">Edit</Table.HeadCell>
-                  </Table.Head>
-                  <Table.Body>
-                    {groupedPosts[category].map((post) => (
-                      <Table.Row key={post._id} className="bg-white">
-                        <Table.Cell>{truncateText(post.title || ' ', 30)}</Table.Cell>
-                        <Table.Cell className="hidden sm:table-cell">{truncateText(post.category || ' ', 20)}</Table.Cell>
-                        <Table.Cell>{truncateText(post.form || ' ', 20)}</Table.Cell>
-                        <Table.Cell>{truncateText(post.subject || ' ', 20)}</Table.Cell>
-                        {category !== 'notes' && (
-                          <>
-                            <Table.Cell className="hidden md:table-cell">{post.term || ' '}</Table.Cell>
-                            <Table.Cell>{post.year || ' '}</Table.Cell>
-                            <Table.Cell className="hidden md:table-cell">{truncateText(post.examType || ' ', 18)}</Table.Cell>
-                          </>
-                        )}
-                        {category === 'exams' && (
-                          <Table.Cell>
-                            <span
-                              className={`font-bold text-xs px-3 py-1 rounded-full shadow-sm ${post.status === 'past_exams' ? 'text-red-700' : ''} ${post.status === 'exam_in_progress' ? 'text-green-700' : ''}`}
-                            >
-                              {post.status === 'past_exams'
-                                ? 'Past Exam'
-                                : post.status === 'exam_in_progress'
-                                ? 'In Progress'
-                                : 'Unknown'}
-                            </span>
-                          </Table.Cell>
-                        )}
+      ) : currentUser?.isOverallAdmin && Object.keys(groupedPosts).length > 0 ? (
+        Object.keys(groupedPosts).map((category) => (
+          <div key={category} className="mb-8">
+            <h2 className="text-xl font-bold my-4 capitalize">{category.replace('_', ' ')}</h2>
+
+            {/* Desktop Table */}
+            <div className="hidden sm:block overflow-x-auto rounded-2xl shadow bg-white">
+              <Table hoverable className="w-full min-w-[600px]">
+                <Table.Head>
+                  <Table.HeadCell>Title</Table.HeadCell>
+                  <Table.HeadCell>Form</Table.HeadCell>
+                  <Table.HeadCell>Subject</Table.HeadCell>
+                  {category !== 'notes' && (
+                    <>
+                      <Table.HeadCell>Term</Table.HeadCell>
+                      <Table.HeadCell>Year</Table.HeadCell>
+                      <Table.HeadCell>Exam Type</Table.HeadCell>
+                    </>
+                  )}
+                  {category === 'exams' && <Table.HeadCell>Status</Table.HeadCell>}
+                  <Table.HeadCell>Actions</Table.HeadCell>
+                </Table.Head>
+                <Table.Body>
+                  {groupedPosts[category].map((post) => (
+                    <Table.Row key={post._id}>
+                      <Table.Cell>{post.title}</Table.Cell>
+                      <Table.Cell>{post.form}</Table.Cell>
+                      <Table.Cell>{post.subject}</Table.Cell>
+                      {category !== 'notes' && (
+                        <>
+                          <Table.Cell>{post.term}</Table.Cell>
+                          <Table.Cell>{post.year}</Table.Cell>
+                          <Table.Cell>{post.examType}</Table.Cell>
+                        </>
+                      )}
+                      {category === 'exams' && (
                         <Table.Cell>
-                          <span
-                            onClick={() => {
-                              setShowModal(true);
-                              setPostIdToDelete(post._id);
-                            }}
-                            className={`font-medium text-red-500 hover:underline cursor-pointer ${loadingDelete ? 'opacity-50 pointer-events-none' : ''}`}
-                          >
-                            {loadingDelete && postIdToDelete === post._id ? 'Deleting...' : 'Delete'}
+                          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${post.status === 'past_exams' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                            {post.status === 'past_exams' ? 'Past Exam' : 'In Progress'}
                           </span>
                         </Table.Cell>
-                        <Table.Cell className="hidden sm:table-cell">
-                          <Link className="text-teal-500 hover:underline" to={`/update-post/${post._id}`}>
-                            Edit
-                          </Link>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
-                  </Table.Body>
-                </Table>
-              </div>
+                      )}
+                      <Table.Cell>
+                        <div className="flex gap-2">
+                          <Link to={`/update-post/${post._id}`} className="text-blue-500 underline">Edit</Link>
+                          <button onClick={() => { setShowModal(true); setPostIdToDelete(post._id); }} className="text-red-500 hover:underline">Delete</button>
+                        </div>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table>
             </div>
-          ))}
-        </>
+
+            {/* Mobile Cards */}
+            <div className="sm:hidden grid gap-4">
+              {groupedPosts[category].map((post) => (
+                <div key={post._id} className="bg-white p-4 rounded-xl shadow">
+                  <h3 className="font-bold text-lg mb-1">{post.title}</h3>
+                  <p><strong>Form:</strong> {post.form}</p>
+                  <p><strong>Subject:</strong> {post.subject}</p>
+                  {category !== 'notes' && (
+                    <>
+                      <p><strong>Term:</strong> {post.term}</p>
+                      <p><strong>Year:</strong> {post.year}</p>
+                      <p><strong>Exam Type:</strong> {post.examType}</p>
+                    </>
+                  )}
+                  {category === 'exams' && (
+                    <p><strong>Status:</strong> <span className={`text-sm font-semibold ${post.status === 'past_exams' ? 'text-red-600' : 'text-green-600'}`}>{post.status === 'past_exams' ? 'Past Exam' : 'In Progress'}</span></p>
+                  )}
+                  <div className="mt-3 flex justify-between">
+                    <Link to={`/update-post/${post._id}`} className="text-blue-500 underline">Edit</Link>
+                    <button onClick={() => { setShowModal(true); setPostIdToDelete(post._id); }} className="text-red-500 hover:underline">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
       ) : (
-        <p>No posts available!</p>
+        <p>No posts found.</p>
       )}
+
+      {showMore && !loadingShowMore && (
+        <div className="flex justify-center mt-4">
+          <Button onClick={handleShowMore}>Show More</Button>
+        </div>
+      )}
+
+      {/* Delete Modal */}
       <Modal show={showModal} onClose={() => setShowModal(false)} popup size="md">
         <Modal.Header />
         <Modal.Body>
           <div className="text-center">
-            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
-            <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
-              Are you sure you want to delete this post?
-            </h3>
+            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 mb-4 mx-auto" />
+            <h3 className="mb-5 text-lg text-gray-500">Are you sure you want to delete this post?</h3>
             <div className="flex justify-center gap-4">
               <Button color="failure" onClick={handleDeletePost} disabled={loadingDelete}>
                 {loadingDelete ? 'Deleting...' : `Yes, I'm sure`}
