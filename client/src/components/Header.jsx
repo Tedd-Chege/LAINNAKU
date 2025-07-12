@@ -47,11 +47,12 @@ export default function Header() {
             </span>
 
             {/* Show username when logged in */}
-            {currentUser && (
-              <span className="text-sm md:text-base font-medium text-[#222] ml-2 truncate max-w-[120px] sm:max-w-[150px]">
-                {currentUser.username}
-              </span>
-            )}
+     {currentUser && (
+  <span className="text-base md:text-lg font-bold text-[#222] ml-2 truncate max-w-[120px] sm:max-w-[150px]">
+    {currentUser.username}
+  </span>
+)}
+
           </Link>
         </div>
 
