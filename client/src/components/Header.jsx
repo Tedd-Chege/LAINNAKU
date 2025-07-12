@@ -46,12 +46,12 @@ export default function Header() {
               Zaja<span className="text-[#222]"> Files</span>
             </span>
 
-            {/* Show username when logged in */}
-     {currentUser && (
+{currentUser && (
   <span className="text-base md:text-lg font-bold text-[#222] ml-2 truncate max-w-[120px] sm:max-w-[150px]">
-    {currentUser.username}
+    @{currentUser.username.charAt(0).toUpperCase() + currentUser.username.slice(1)}
   </span>
 )}
+
 
           </Link>
         </div>
