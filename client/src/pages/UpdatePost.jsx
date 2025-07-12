@@ -1,3 +1,4 @@
+// UpdatePost.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
@@ -6,18 +7,10 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/
 import { app } from "../firebase";
 import DashSidebar from '../components/DashSidebar';
 
-// --- Styling from UploadForm ---
-const fieldClass =
-  "block w-full px-5 py-3 text-base text-[#222] bg-white border-2 border-[#ececec] rounded-xl focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 focus:shadow-lg outline-none transition placeholder:font-normal placeholder:text-[#000000]";
-
+const fieldClass = "block w-full px-5 py-3 text-base text-[#222] bg-white border-2 border-[#ececec] rounded-xl focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 focus:shadow-lg outline-none transition placeholder:font-normal placeholder:text-[#000000]";
 const labelClass = "block font-semibold text-base text-[#222] mb-2";
-
-const buttonClass =
-  "w-full mt-2 rounded-xl bg-[#ff385c] hover:bg-[#d7043c] active:scale-95 transition text-white text-lg font-bold py-3 shadow-md focus:ring-2 focus:ring-[#ff385c]/30";
-
-const cardClass =
-  "bg-white border border-[#ececec] rounded-3xl shadow-xl w-full max-w-xl p-6 md:p-10 flex flex-col gap-10 ml-10";
-// ---
+const buttonClass = "w-full mt-2 rounded-xl bg-[#ff385c] hover:bg-[#d7043c] active:scale-95 transition text-white text-lg font-bold py-3 shadow-md focus:ring-2 focus:ring-[#ff385c]/30";
+const cardClass = "bg-white border border-[#ececec] rounded-3xl shadow-xl w-full max-w-xl p-6 md:p-10 flex flex-col gap-10 ml-10";
 
 const UpdatePost = () => {
   const { postId } = useParams();
@@ -36,6 +29,7 @@ const UpdatePost = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [examType, setExamType] = useState("opener");
+  const [status, setStatus] = useState("past_exams");
 
   useEffect(() => {
     const fetchPostData = async () => {
@@ -51,12 +45,12 @@ const UpdatePost = () => {
         setDescription(post.description);
         setTitle(post.title);
         setExamType(post.examType || "opener");
+        setStatus(post.status || "past_exams");
       } catch (error) {
         setError("Error fetching post data");
       }
     };
     fetchPostData();
-    // eslint-disable-next-line
   }, [postId]);
 
   const handleFileChange = (e) => setFile(e.target.files[0]);
@@ -80,31 +74,23 @@ const UpdatePost = () => {
 
   const handleFileSubmit = async (e) => {
     e.preventDefault();
-    if (!file) {
-      setError("Please select a file to upload");
-      return;
-    }
+    if (!file) return setError("Please select a file to upload");
     setUploading(true);
     setError(null);
     try {
       const url = await storeFile(file);
       setFileUrl(url);
       setFile(null);
-      setUploading(false);
     } catch (error) {
       setError("File upload failed (10MB max per file)");
+    } finally {
       setUploading(false);
     }
   };
 
-  const handleRemoveFile = () => setFileUrl("");
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!fileUrl) {
-      setError("You must upload a file");
-      return;
-    }
+    if (!fileUrl) return setError("You must upload a file");
     const formData = {
       fileUrl,
       category,
@@ -115,6 +101,7 @@ const UpdatePost = () => {
       description,
       title,
       examType: category !== "notes" ? examType : "",
+      status,
     };
     try {
       await axios.put(`/api/files/updatepost/${postId}`, formData, {
@@ -124,197 +111,73 @@ const UpdatePost = () => {
         },
       });
       alert("Post updated successfully");
-      navigate("/dashboard?tab=profile");
+      navigate("/dashboard?tab=posts");
     } catch (error) {
       setError("Failed to update post");
     }
   };
 
-  // Responsive margin for main content
-  const [windowWidth, setWindowWidth] = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 1024));
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(typeof window !== 'undefined' ? window.innerWidth : 1024);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  const marginLeft = windowWidth >= 1024 ? 224 : 0;
-
   return (
     <div className="min-h-screen bg-[#fafafa] flex mt-14 relative">
-      {/* Sidebar - always on left for desktop, overlays on mobile */}
-      <aside
-        className={`
-          fixed md:static top-18 left-0 h-[calc(100vh-3.5rem)] z-30
-          transition-all duration-300 border-r border-[#fffdfd] backdrop-blur-lg
-           shadow-2xl bg-white/90
-          block
-        `}
-        style={{
-          minHeight: 'calc(100vh - 3.5rem)',
-          flexShrink: 0,
-        }}
-      >
+      <aside className="fixed md:static top-18 left-0 h-[calc(100vh-3.5rem)] z-30 border-r border-[#fffdfd] backdrop-blur-lg shadow-2xl bg-white/90">
         <DashSidebar />
       </aside>
-      {/* Main content */}
-      <div
-        className="flex-1  flex items-center justify-center px-2 py-10"
-        style={{
-          marginLeft,
-          transition: 'margin-left 0.3s cubic-bezier(.4,0,.2,1)'
-        }}
-      >
+      <div className="flex-1 flex items-center justify-center px-2 py-10">
         <div className={cardClass}>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-[#222] text-center mb-2 tracking-tight">
-            Update File
-          </h1>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-[#222] text-center mb-2 tracking-tight">Update File</h1>
           <form className="space-y-8" onSubmit={handleSubmit} autoComplete="off">
-            {/* Title */}
             <div>
               <label className={labelClass} htmlFor="title">Title</label>
-              <input
-                id="title"
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                placeholder="Enter file title"
-                aria-label="File title"
-                className={fieldClass}
-              />
+              <input id="title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className={fieldClass} />
             </div>
-            {/* File Upload */}
+
             <div>
               <label className={labelClass} htmlFor="file">Select File</label>
-              <input
-                id="file"
-                type="file"
-                onChange={handleFileChange}
-                className={fieldClass}
-                aria-label="Select file to upload"
-              />
-              <button
-                type="button"
-                onClick={handleFileSubmit}
-                disabled={uploading}
-                className={buttonClass + (uploading ? " opacity-60 cursor-wait" : "")}
-                aria-label="Upload file"
-              >
-                {uploading ? "Uploading..." : "Upload"}
-              </button>
-           {/* Uploaded File Section */}
-{fileUrl && (
-  <div>
-    <label className={labelClass}>Uploaded File:</label>
-    <div className="flex justify-between items-center border rounded-xl px-4 py-3 mt-1 bg-[#f8f9fa]">
-      <a
-        href={fileUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 underline font-semibold break-all"
-      >
-        Uploaded File
-      </a>
-      <button
-        type="button"
-        onClick={handleRemoveFile}
-        className="text-[#ff385c] hover:text-[#d7043c] font-semibold"
-      >
-        Delete
-      </button>
-    </div>
-  </div>
-)}
-
+              <input id="file" type="file" onChange={handleFileChange} className={fieldClass} />
+              <button type="button" onClick={handleFileSubmit} disabled={uploading} className={buttonClass + (uploading ? " opacity-60 cursor-wait" : "")}>{uploading ? "Uploading..." : "Upload"}</button>
+              {fileUrl && (
+                <div className="mt-2 flex justify-between items-center border rounded-xl px-4 py-3 bg-[#f8f9fa]">
+                  <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline font-semibold break-all">Uploaded File</a>
+                  <button type="button" onClick={() => setFileUrl("")} className="text-[#ff385c] hover:text-[#d7043c] font-semibold">Delete</button>
+                </div>
+              )}
               {error && <p className="text-base font-semibold text-[#ff385c] mt-2">{error}</p>}
             </div>
-            {/* Category */}
+
             <div>
               <label className={labelClass} htmlFor="category">Category</label>
-              <select
-                id="category"
-                value={category}
-                onChange={(e) => {
-                  setCategory(e.target.value);
-                  if (e.target.value === "notes") {
-                    setYear("");
-                    setTerm("");
-                  }
-                }}
-                className={fieldClass}
-                required
-                aria-label="Select category"
-              >
+              <select id="category" value={category} onChange={(e) => setCategory(e.target.value)} className={fieldClass} required>
                 <option value="notes">Notes</option>
                 <option value="exams">Exams</option>
                 <option value="results">Results</option>
                 <option value="marking_scheme">Marking Scheme</option>
               </select>
             </div>
-            {/* Subject */}
+
+            {category === "exams" && (
+              <div>
+                <label className={labelClass} htmlFor="status">Status</label>
+                <select id="status" value={status} onChange={(e) => setStatus(e.target.value)} className={fieldClass} required>
+                  <option value="exam_in_progress">Exam In Progress</option>
+                  <option value="past_exams">Past Exams</option>
+                </select>
+              </div>
+            )}
+
             <div>
               <label className={labelClass} htmlFor="subject">Subject</label>
-              <select
-                id="subject"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                className={fieldClass}
-                required
-                aria-label="Select subject"
-              >
-                <option value="math">Math</option>
-                <option value="english">English</option>
-                <option value="Kiswahili">Kiswahili</option>
-                <option value="biology">Biology</option>
-                <option value="chemistry">Chemistry</option>
-                <option value="physics">Physics</option>
-                <option value="history">History</option>
-                <option value="geography">Geography</option>
-                <option value="cre">CRE</option>
-                <option value="computer">Computer</option>
-                <option value="french">French</option>
-                <option value="german">German</option>
-                <option value="aviation">Aviation</option>
-                <option value="agriculture">Agriculture</option>
-                <option value="music">Music</option>
-                <option value="homescience">Home Science</option>
-                <option value="electricity">Electricity</option>
-                <option value="business">Business</option>
-                <option value="woodwork">Woodwork</option>
-                <option value="art">Art</option>
-                <option value="drawing_design">Drawing and design</option>
-                <option value="building_construction">Building & Construction</option>
-                <option value="IRE">IRE</option>
-                <option value="Electricity">Electricity</option>
-                <option value="all_subjects">All subjects</option>
-              </select>
+              <input id="subject" type="text" value={subject} onChange={(e) => setSubject(e.target.value)} className={fieldClass} required />
             </div>
-            {/* Conditional fields for non-notes */}
+
             {category !== "notes" && (
               <>
                 <div>
                   <label className={labelClass} htmlFor="year">Year</label>
-                  <input
-                    id="year"
-                    type="number"
-                    value={year}
-                    onChange={(e) => setYear(e.target.value)}
-                    required
-                    placeholder="e.g. 2023"
-                    aria-label="Enter year"
-                    className={fieldClass}
-                  />
+                  <input id="year" type="number" value={year} onChange={(e) => setYear(e.target.value)} required placeholder="e.g. 2023" className={fieldClass} />
                 </div>
                 <div>
                   <label className={labelClass} htmlFor="term">Term</label>
-                  <select
-                    id="term"
-                    value={term}
-                    onChange={(e) => setTerm(e.target.value)}
-                    className={fieldClass}
-                    required
-                    aria-label="Select term"
-                  >
+                  <select id="term" value={term} onChange={(e) => setTerm(e.target.value)} className={fieldClass} required>
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -322,14 +185,7 @@ const UpdatePost = () => {
                 </div>
                 <div>
                   <label className={labelClass} htmlFor="examType">Exam Type</label>
-                  <select
-                    id="examType"
-                    value={examType}
-                    onChange={(e) => setExamType(e.target.value)}
-                    className={fieldClass}
-                    required
-                    aria-label="Select exam type"
-                  >
+                  <select id="examType" value={examType} onChange={(e) => setExamType(e.target.value)} className={fieldClass} required>
                     <option value="opener">Opener</option>
                     <option value="midterm">Midterm</option>
                     <option value="endterm">Endterm</option>
@@ -337,17 +193,10 @@ const UpdatePost = () => {
                 </div>
               </>
             )}
-            {/* Form */}
+
             <div>
               <label className={labelClass} htmlFor="form">Form</label>
-              <select
-                id="form"
-                value={form}
-                onChange={(e) => setForm(e.target.value)}
-                className={fieldClass}
-                required
-                aria-label="Select form"
-              >
+              <select id="form" value={form} onChange={(e) => setForm(e.target.value)} className={fieldClass} required>
                 <option value=""></option>
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -355,28 +204,13 @@ const UpdatePost = () => {
                 <option value="4">4</option>
               </select>
             </div>
-            {/* Description */}
+
             <div>
               <label className={labelClass} htmlFor="description">Description</label>
-              <textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className={fieldClass + " min-h-[90px] resize-none "}
-                required
-                placeholder="Describe the file..."
-                aria-label="File description"
-              />
+              <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} className={fieldClass + " min-h-[90px] resize-none"} required placeholder="Describe the file..." />
             </div>
-            {/* Submit */}
-            <button
-              type="submit"
-              className={buttonClass}
-              aria-label="Submit file update"
-            >
-              Update
-            </button>
-            {error && <p className="text-base font-semibold text-[#ff385c] mt-2">{error}</p>}
+
+            <button type="submit" className={buttonClass}>Update</button>
           </form>
         </div>
       </div>

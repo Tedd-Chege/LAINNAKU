@@ -30,7 +30,6 @@ export default function AllPosts() {
         if (!res) return;
         const data = await res.json();
         let postsData = res.ok ? (data.posts || data) : [];
-        // Sort posts by uploadDate in descending order
         const sortedPosts = postsData.sort(
           (a, b) => new Date(b.uploadDate) - new Date(a.uploadDate)
         );
@@ -52,15 +51,12 @@ export default function AllPosts() {
     setLoadingShowMore(true);
     const startIndex = posts.length;
     try {
-      const res = await fetch(
-        `/api/files/getallposts?startIndex=${startIndex}`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          },
-        }
-      );
+      const res = await fetch(`/api/files/getallposts?startIndex=${startIndex}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
       const data = await res.json();
       if (res.ok) {
         const newPosts = data.posts.filter(
@@ -82,7 +78,6 @@ export default function AllPosts() {
     }
   };
 
-  // Group posts by category
   const groupedPosts = posts.reduce((acc, post) => {
     acc[post.category] = acc[post.category] || [];
     acc[post.category].push(post);
@@ -98,20 +93,15 @@ export default function AllPosts() {
     setLoadingDelete(true);
     setShowModal(false);
     try {
-      const res = await fetch(
-        `/api/files/deletepost/${postIdToDelete}/${currentUser._id}`,
-        {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          },
-        }
-      );
+      const res = await fetch(`/api/files/deletepost/${postIdToDelete}/${currentUser._id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
       const data = await res.json();
       if (res.ok) {
-        setPosts((prev) =>
-          prev.filter((post) => post._id !== postIdToDelete)
-        );
+        setPosts((prev) => prev.filter((post) => post._id !== postIdToDelete));
       } else {
         console.log(data.message);
       }
@@ -131,7 +121,6 @@ export default function AllPosts() {
           {Object.keys(groupedPosts).map((category) => (
             <div key={category} className="mb-10">
               <h2 className="text-xl font-bold my-4">{category}</h2>
-              {/* Desktop Table */}
               <div className="hidden sm:block overflow-x-auto rounded-2xl shadow bg-white">
                 <Table hoverable className="w-full min-w-[600px]">
                   <Table.Head>
@@ -146,7 +135,9 @@ export default function AllPosts() {
                         <Table.HeadCell className="hidden md:table-cell">Exam Type</Table.HeadCell>
                       </>
                     )}
-                    <Table.HeadCell>Download</Table.HeadCell>
+                    {category === 'exams' && (
+                      <Table.HeadCell>Status</Table.HeadCell>
+                    )}
                     <Table.HeadCell>Delete</Table.HeadCell>
                     <Table.HeadCell className="hidden sm:table-cell">Edit</Table.HeadCell>
                   </Table.Head>
@@ -164,16 +155,19 @@ export default function AllPosts() {
                             <Table.Cell className="hidden md:table-cell">{truncateText(post.examType || ' ', 18)}</Table.Cell>
                           </>
                         )}
-                        <Table.Cell>
-                          <a
-                            href={post.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-teal-500 underline"
-                          >
-                            Download
-                          </a>
-                        </Table.Cell>
+                        {category === 'exams' && (
+                          <Table.Cell>
+                            <span
+                              className={`font-bold text-xs px-3 py-1 rounded-full shadow-sm ${post.status === 'past_exams' ? 'text-red-700' : ''} ${post.status === 'exam_in_progress' ? 'text-green-700' : ''}`}
+                            >
+                              {post.status === 'past_exams'
+                                ? 'Past Exam'
+                                : post.status === 'exam_in_progress'
+                                ? 'In Progress'
+                                : 'Unknown'}
+                            </span>
+                          </Table.Cell>
+                        )}
                         <Table.Cell>
                           <span
                             onClick={() => {
@@ -186,10 +180,7 @@ export default function AllPosts() {
                           </span>
                         </Table.Cell>
                         <Table.Cell className="hidden sm:table-cell">
-                          <Link
-                            className="text-teal-500 hover:underline"
-                            to={`/update-post/${post._id}`}
-                          >
+                          <Link className="text-teal-500 hover:underline" to={`/update-post/${post._id}`}>
                             Edit
                           </Link>
                         </Table.Cell>
@@ -198,91 +189,13 @@ export default function AllPosts() {
                   </Table.Body>
                 </Table>
               </div>
-              {/* Mobile Cards */}
-              <div className="sm:hidden flex flex-col gap-4">
-                {groupedPosts[category].map((post) => (
-                  <div key={post._id} className="bg-white rounded-xl shadow p-3">
-                    <div>
-                      <span className="font-semibold">Title: </span>
-                      <span>{truncateText(post.title || ' ', 30)}</span>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Category: </span>
-                      <span>{truncateText(post.category || ' ', 20)}</span>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Form: </span>
-                      <span>{truncateText(post.form || ' ', 20)}</span>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Subject: </span>
-                      <span>{truncateText(post.subject || ' ', 20)}</span>
-                    </div>
-                    {category !== 'notes' && (
-                      <>
-                        <div>
-                          <span className="font-semibold">Term: </span>
-                          <span>{post.term || ' '}</span>
-                        </div>
-                        <div>
-                          <span className="font-semibold">Year: </span>
-                          <span>{post.year || ' '}</span>
-                        </div>
-                        <div>
-                          <span className="font-semibold">Exam Type: </span>
-                          <span>{truncateText(post.examType || ' ', 18)}</span>
-                        </div>
-                      </>
-                    )}
-                    <div className="flex gap-3 mt-2">
-                      <a
-                        href={post.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-teal-500 underline"
-                      >
-                        Download
-                      </a>
-                      <span
-                        onClick={() => {
-                          setShowModal(true);
-                          setPostIdToDelete(post._id);
-                        }}
-                        className={`font-medium text-red-500 hover:underline cursor-pointer ${loadingDelete ? 'opacity-50 pointer-events-none' : ''}`}
-                      >
-                        {loadingDelete && postIdToDelete === post._id ? 'Deleting...' : 'Delete'}
-                      </span>
-                      <Link
-                        className="text-teal-500 hover:underline"
-                        to={`/update-post/${post._id}`}
-                      >
-                        Edit
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           ))}
-          {showMore && (
-            <button
-              onClick={handleShowMore}
-              className="w-full text-teal-500 self-center text-sm py-7"
-              disabled={loadingShowMore}
-            >
-              {loadingShowMore ? 'Loading...' : 'Show more'}
-            </button>
-          )}
         </>
       ) : (
         <p>No posts available!</p>
       )}
-      <Modal
-        show={showModal}
-        onClose={() => setShowModal(false)}
-        popup
-        size="md"
-      >
+      <Modal show={showModal} onClose={() => setShowModal(false)} popup size="md">
         <Modal.Header />
         <Modal.Body>
           <div className="text-center">

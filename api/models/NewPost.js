@@ -1,3 +1,4 @@
+
 import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
@@ -59,6 +60,11 @@ const postSchema = new Schema({
     type: String,
     enum: ["opener", "midterm", "endterm"],
     required: true // optional: ensures it must be provided
+  },
+     status: {
+    type: String,
+    enum: ["exam_in_progress", "past_exams"],
+    default: "not_exam", // default value if not specified
   },
   uploadDate: {
     type: Date,

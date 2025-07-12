@@ -4,7 +4,7 @@ import NewPost from '../models/NewPost.js';
 // uploadFile function
 export const uploadFile = async (req, res, next) => {
   try {
-    const { userId, fileUrl, category, subject, year, form, term, title, description } = req.body; // updated terms to term
+    const { userId, fileUrl, category, subject, year, form, term, title, description, status } = req.body; // updated terms to term
 
     const post = new NewPost({
       userId,
@@ -16,6 +16,7 @@ export const uploadFile = async (req, res, next) => {
       term, // updated terms to term
       title,
       description,
+      status,
     });
 
     const savedPost = await post.save();
@@ -102,7 +103,7 @@ export const deletepost = async (req, res, next) => {
 // controllers/post.controller.js
 
 export const updatepost = async (req, res, next) => {
-  const { fileUrl, category, subject, year, term, form, title, description } = req.body;
+  const { fileUrl, category, subject, year, term, form, title, description,status } = req.body;
   const postId = req.params.id;
 
   try {
@@ -117,6 +118,7 @@ export const updatepost = async (req, res, next) => {
         form,
         title,
         description,
+        status,
       },
       { new: true }
     );

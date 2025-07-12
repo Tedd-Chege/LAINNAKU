@@ -1,4 +1,4 @@
-// UploadForm.jsx
+// Fully Integrated UploadForm.jsx with conditional status field display
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
@@ -22,8 +22,8 @@ const buttonClass =
 const cardClass =
   "bg-white border border-[#ececec] rounded-3xl shadow-xl w-full max-w-xl p-6 md:p-10 flex flex-col gap-10";
 
-const SIDEBAR_COLLAPSED = 64; // px (w-16)
-const SIDEBAR_EXPANDED = 224; // px (w-56)
+const SIDEBAR_COLLAPSED = 64;
+const SIDEBAR_EXPANDED = 224;
 
 const UploadForm = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -39,8 +39,8 @@ const UploadForm = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [examType, setExamType] = useState("opener");
+  const [status, setStatus] = useState("not_exam");
 
-  // Responsive sidebar expanded/collapsed logic
   const [sidebarExpanded, setSidebarExpanded] = useState(window.innerWidth >= 1024);
   useEffect(() => {
     const handleResize = () => {
@@ -106,6 +106,7 @@ const UploadForm = () => {
       title,
       uploadDate: new Date(),
       examType: category !== "notes" ? examType : "",
+      status: category === "exams" ? status : "not_exam",
     };
     try {
       await axios.post("/api/files/upload", formData, {
@@ -123,69 +124,37 @@ const UploadForm = () => {
       setForm("");
       setDescription("");
       setTitle("");
+      setStatus("not_exam");
     } catch (error) {
       setError("Failed to upload file");
     }
   };
 
-  // Responsive layout logic
-  // Margin left is set on main content for desktop, not mobile
-  const marginLeft =
-    typeof window !== 'undefined' && window.innerWidth >= 1024
-      ? (sidebarExpanded ? SIDEBAR_EXPANDED : SIDEBAR_COLLAPSED)
-      : 0;
+  const marginLeft = typeof window !== 'undefined' && window.innerWidth >= 1024 ? (sidebarExpanded ? SIDEBAR_EXPANDED : SIDEBAR_COLLAPSED) : 0;
 
   return (
     <div className="min-h-screen bg-[#fafafa] font-sans pt-16 flex">
-      {/* Sidebar */}
       <aside
-        className={`
-          fixed top-16 left-0 h-[calc(100vh-4rem)] z-30
-          transition-all duration-300 border-r border-[#ececec] backdrop-blur-lg
-          ${sidebarExpanded ? 'w-56 shadow-2xl bg-white/90' : 'w-16 bg-white/80'}
-        `}
-        style={{
-          minHeight: 'calc(100vh - 4rem)',
-          flexShrink: 0,
-        }}
+        className={`fixed top-16 left-0 h-[calc(100vh-4rem)] z-30 transition-all duration-300 border-r border-[#ececec] backdrop-blur-lg ${sidebarExpanded ? 'w-56 shadow-2xl bg-white/90' : 'w-16 bg-white/80'}`}
+        style={{ minHeight: 'calc(100vh - 4rem)', flexShrink: 0 }}
       >
-        <DashSidebar
-          expanded={sidebarExpanded}
-          onToggle={() => setSidebarExpanded((e) => !e)}
-        />
+        <DashSidebar expanded={sidebarExpanded} onToggle={() => setSidebarExpanded((e) => !e)} />
       </aside>
 
-      {/* Main content: add margin-left for desktop, none for mobile */}
       <main
         className="flex-1 flex items-center justify-center px-2 py-10"
-        style={{
-          marginLeft: marginLeft,
-          transition: 'margin-left 0.3s cubic-bezier(.4,0,.2,1)',
-        }}
+        style={{ marginLeft, transition: 'margin-left 0.3s cubic-bezier(.4,0,.2,1)' }}
       >
         <div className={cardClass}>
           <h1 className="text-3xl md:text-4xl font-extrabold text-[#222] text-center mb-2 tracking-tight">
             Upload File
           </h1>
           <form className="space-y-8" onSubmit={handleSubmit} autoComplete="off">
-            {/* ... all other fields unchanged ... */}
             <div>
               <label className={labelClass} htmlFor="title">Title</label>
-              <input id="title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Enter file title" aria-label="File title" className={fieldClass} />
+              <input id="title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className={fieldClass} />
             </div>
-            <div>
-              <label className={labelClass} htmlFor="file">Select File</label>
-              <input id="file" type="file" onChange={handleFileChange} className={fieldClass} required aria-label="Select file to upload" />
-              <button type="button" onClick={handleFileSubmit} disabled={uploading} className={buttonClass + (uploading ? " opacity-60 cursor-wait" : "")} aria-label="Upload file">{uploading ? "Uploading..." : "Upload"}</button>
-              {fileUrl && (
-                <div className="mt-2 text-base font-semibold text-green-700 flex items-center gap-2">
-                  File uploaded!
-                  <button type="button" onClick={() => setFileUrl("")} className="underline text-[#ff385c] hover:text-[#d7043c] font-semibold">Remove</button>
-                </div>
-              )}
-              {error && (<p className="text-base font-semibold text-[#ff385c] mt-2">{error}</p>)}
-            </div>
-            {/* ... all other fields unchanged ... */}
+
             <div>
               <label className={labelClass} htmlFor="category">Category</label>
               <select id="category" value={category} onChange={(e) => {
@@ -194,16 +163,84 @@ const UploadForm = () => {
                   setYear("");
                   setTerm("");
                 }
-              }} className={fieldClass} required aria-label="Select category">
+              }} className={fieldClass} required>
                 <option value="notes">Notes</option>
                 <option value="exams">Exams</option>
                 <option value="results">Results</option>
                 <option value="marking_scheme">Marking Scheme</option>
               </select>
             </div>
-            {/* ...rest of your form fields remain unchanged... */}
-            {/* ...snip for brevity... */}
-            <button type="submit" className={buttonClass} aria-label="Submit file upload">Submit</button>
+
+            {category !== "notes" && (
+              <>
+                <div>
+                  <label className={labelClass} htmlFor="year">Year</label>
+                  <input id="year" type="number" value={year} onChange={(e) => setYear(e.target.value)} className={fieldClass} required />
+                </div>
+                <div>
+                  <label className={labelClass} htmlFor="term">Term</label>
+                  <select id="term" value={term} onChange={(e) => setTerm(e.target.value)} className={fieldClass} required>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass} htmlFor="examType">Exam Type</label>
+                  <select id="examType" value={examType} onChange={(e) => setExamType(e.target.value)} className={fieldClass} required>
+                    <option value="opener">Opener</option>
+                    <option value="midterm">Midterm</option>
+                    <option value="endterm">Endterm</option>
+                  </select>
+                </div>
+              </>
+            )}
+
+            {category === "exams" && (
+              <div>
+                <label className={labelClass} htmlFor="status">Status</label>
+                <select id="status" value={status} onChange={(e) => setStatus(e.target.value)} className={fieldClass} required>
+                  <option value="exam_in_progress">Exam In Progress</option>
+                  <option value="past_exams">Past Exams</option>
+                </select>
+              </div>
+            )}
+
+            <div>
+              <label className={labelClass} htmlFor="form">Form</label>
+              <select id="form" value={form} onChange={(e) => setForm(e.target.value)} className={fieldClass} required>
+                <option value="">Select form</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </div>
+
+            <div>
+              <label className={labelClass} htmlFor="subject">Subject</label>
+              <input id="subject" type="text" value={subject} onChange={(e) => setSubject(e.target.value)} className={fieldClass} required />
+            </div>
+
+            <div>
+              <label className={labelClass} htmlFor="description">Description</label>
+              <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} className={fieldClass + " min-h-[90px] resize-none"} required />
+            </div>
+
+            <div>
+              <label className={labelClass} htmlFor="file">Select File</label>
+              <input id="file" type="file" onChange={handleFileChange} className={fieldClass} required />
+              <button type="button" onClick={handleFileSubmit} disabled={uploading} className={buttonClass + (uploading ? " opacity-60 cursor-wait" : "")}>{uploading ? "Uploading..." : "Upload File"}</button>
+              {fileUrl && (
+                <div className="mt-2 text-base font-semibold text-green-700 flex items-center gap-2">
+                  File uploaded!
+                  <button type="button" onClick={() => setFileUrl("")} className="underline text-[#ff385c] hover:text-[#d7043c] font-semibold">Remove</button>
+                </div>
+              )}
+              {error && (<p className="text-base font-semibold text-[#ff385c] mt-2">{error}</p>)}
+            </div>
+
+            <button type="submit" className={buttonClass}>Submit</button>
           </form>
         </div>
       </main>
