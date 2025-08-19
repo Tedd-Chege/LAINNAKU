@@ -36,7 +36,7 @@ const GroupedPostCard = ({ groupKey, groupInfo, onClick }) => {
           <span className="font-bold">Subjects:</span> {subjects}
         </p>
         <p className="text-base text-gray-800 mt-auto">
-          <span className="font-bold">Form:</span> {forms.length}
+            <span className="font-bold">Form:</span> {forms.join(', ')}
         </p>
       </div>
     </Card>
