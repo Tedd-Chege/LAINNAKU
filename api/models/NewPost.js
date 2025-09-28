@@ -56,15 +56,23 @@ const postSchema = new Schema({
     type: String,
     required: true,
   },
-    examType: {
+  examType: {
     type: String,
     enum: ["opener", "midterm", "endterm"],
-    required: true // optional: ensures it must be provided
+    default: function () {
+      return this.category === "exams" ? "opener" : undefined; // Default to "opener" for exams, undefined otherwise
+    },
+    validate: {
+      validator: function (value) {
+        return this.category === "exams" ? value != null && ["opener", "midterm", "endterm"].includes(value) : true;
+      },
+      message: "Exam type is required and must be valid for the exams category",
+    },
   },
-     status: {
+  status: {
     type: String,
-    enum: ["exam_in_progress", "past_exams"],
-    default: "not_exam", // default value if not specified
+    enum: ["exam_in_progress", "past_exams", "not_exam"],
+    default: "not_exam", // Default to "not_exam"
   },
   uploadDate: {
     type: Date,

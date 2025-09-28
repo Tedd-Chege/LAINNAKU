@@ -3,37 +3,64 @@ import { HiDownload } from "react-icons/hi";
 
 function GlassCard({ children, className = '' }) {
   return (
-    <div className={`glass-card p-4 ${className}`}>
+    <div
+      className={[
+        "glass-card relative rounded-2xl p-6",
+        "bg-white/60 backdrop-blur-lg border border-white/40 shadow-lg",
+        "hover:shadow-2xl transition-all duration-300",
+        className,
+      ].join(' ')}
+    >
       {children}
     </div>
   );
 }
 
-const PostCard = ({ post }) => (
-  <GlassCard className="mb-4">
-    <h3 className="text-2xl font-bold text-[#183153] mb-2">{post.title}</h3>
-    <p className="text-base text-[#1e293b]"><strong>Category:</strong> {post.category}</p>
-    <p className="text-base text-[#1e293b]"><strong>Form:</strong> {post.form}</p>
-    <p className="text-base text-[#1e293b]"><strong>Subject:</strong> {post.subject}</p>
-    {post.category !== 'notes' && (
-      <>
-        <p className="text-base text-[#1e293b]"><strong>Term:</strong> {post.term}</p>
-        <p className="text-base text-[#1e293b]"><strong>Year:</strong> {post.year}</p>
-        <p className="text-base text-[#1e293b]"><strong>Exam Type:</strong> {post.examType}</p>
-      </>
-    )}
-    <p className="text-base text-[#1e293b]"><strong>Description:</strong> {post.description}</p>
-    <p className="text-base text-[#1e293b]"><strong>Upload Date:</strong> {new Date(post.uploadDate).toLocaleDateString()}</p>
-  <a
-  href={post.fileUrl}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="inline-flex items-center gap-2 mt-4 px-6 py-2 bg-[#e42649] hover:bg-[#5a0e22] text-white font-bold rounded-xl shadow-md transition active:scale-95 text-lg"
->
-  <HiDownload className="w-5 h-5" />
-  Download
-</a>
-  </GlassCard>
-);
+const PostCard = ({ post }) => {
+  const safeDate = post.uploadDate ? new Date(post.uploadDate).toLocaleDateString() : "—";
+
+  return (
+    <GlassCard className="mb-6">
+      {/* Title */}
+      <h3 className="text-xl sm:text-2xl font-extrabold text-[#183153] mb-3 line-clamp-2">
+        {post.title || "Untitled"}
+      </h3>
+
+      {/* Meta info grid */}
+      <div className="space-y-1 text-sm sm:text-base text-[#1e293b] mb-4">
+        <p><span className="font-semibold">Category:</span> {post.category || "—"}</p>
+        <p><span className="font-semibold">Form:</span> {post.form || "—"}</p>
+        <p><span className="font-semibold">Subject:</span> {post.subject || "—"}</p>
+
+        {post.category !== 'notes' && (
+          <>
+            <p><span className="font-semibold">Term:</span> {post.term || "—"}</p>
+            <p><span className="font-semibold">Year:</span> {post.year || "—"}</p>
+            <p><span className="font-semibold">Exam Type:</span> {post.examType || "—"}</p>
+          </>
+        )}
+
+        {post.description && (
+          <p className="italic text-gray-600"><span className="font-semibold not-italic">Description:</span> {post.description}</p>
+        )}
+
+        <p><span className="font-semibold">Uploaded:</span> {safeDate}</p>
+      </div>
+
+      {/* Download button */}
+      {post.fileUrl && (
+        <a
+          href={post.fileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#e42649] to-[#b91c3a] hover:from-[#5a0e22] hover:to-[#701c2d] text-white font-bold rounded-xl shadow-md transition transform active:scale-95 text-sm sm:text-base"
+        >
+          <HiDownload className="w-5 h-5 shrink-0" />
+          Download
+        </a>
+      )}
+    </GlassCard>
+  );
+};
 
 export default PostCard;

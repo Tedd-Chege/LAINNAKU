@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import DashSidebar from '../components/DashSidebar'; // Import your actual component
+import DashSidebar from '../components/DashSidebar';
 import PostCard from '../components/PostCard';
 import GroupedPostCard from '../components/GroupedPostCard';
 import { Button } from 'flowbite-react';
@@ -11,14 +11,12 @@ export default function AllPosts() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showMore, setShowMore] = useState(false);
-  // Sidebar expanded by default on large screens
   const [sidebarExpanded, setSidebarExpanded] = useState(() => window.innerWidth >= 1024);
   const [startIndex, setStartIndex] = useState(0);
   const limit = 10;
   const fetchedPostIds = useRef(new Set());
   const navigate = useNavigate();
 
-  // Sidebar width
   const sidebarWidthCollapsed = 64;
   const sidebarWidthExpanded = 224;
 
@@ -56,22 +54,58 @@ export default function AllPosts() {
   };
 
   // Group logic
-  const grouped = { exams: {}, marking_scheme: {}, others: [] };
+  const grouped = { exams: {}, marking_scheme: {}, notes: {}, results: {}, others: [] };
   posts.forEach(post => {
     if (post.category === 'exams') {
-      const key = `${post.year}-${post.term}-${post.examType}`;
-      if (!grouped.exams[key]) grouped.exams[key] = { year: post.year, term: post.term, examType: post.examType, files: [] };
+      // Group by status, form, year, term, and examType
+      const key = `${post.status}-${post.form}-${post.year}-${post.term}-${post.examType}`;
+      if (!grouped.exams[key]) {
+        grouped.exams[key] = {
+          status: post.status,
+          form: post.form,
+          year: post.year,
+          term: post.term,
+          examType: post.examType,
+          files: [],
+        };
+      }
       grouped.exams[key].files.push(post);
     } else if (post.category === 'marking_scheme') {
       const key = `${post.year}-${post.term}-${post.examType}`;
-      if (!grouped.marking_scheme[key]) grouped.marking_scheme[key] = { year: post.year, term: post.term, examType: post.examType, files: [] };
+      if (!grouped.marking_scheme[key]) {
+        grouped.marking_scheme[key] = {
+          year: post.year,
+          term: post.term,
+          examType: post.examType,
+          files: [],
+        };
+      }
       grouped.marking_scheme[key].files.push(post);
+    } else if (post.category === 'notes') {
+      const key = `${post.form}`;
+      if (!grouped.notes[key]) {
+        grouped.notes[key] = {
+          form: post.form,
+          files: [],
+        };
+      }
+      grouped.notes[key].files.push(post);
+    } else if (post.category === 'results') {
+      const key = `${post.year}-${post.term}-${post.examType}`;
+      if (!grouped.results[key]) {
+        grouped.results[key] = {
+          year: post.year,
+          term: post.term,
+          examType: post.examType,
+          files: [],
+        };
+      }
+      grouped.results[key].files.push(post);
     } else {
       grouped.others.push(post);
     }
   });
 
-  // Glass card utility
   const glassCardClass = "backdrop-blur-[6px] bg-white/60 rounded-2xl shadow-lg border border-white/20 p-4 mb-8";
 
   return (
@@ -102,8 +136,8 @@ export default function AllPosts() {
         `}
         style={{
           marginLeft: sidebarExpanded
-            ? `${sidebarWidthExpanded + 40}px` // 224 + 40 = 264px
-            : `${sidebarWidthCollapsed + 10}px`, // 64 + 40 = 104px
+            ? `${sidebarWidthExpanded + 30}px`
+            : `${sidebarWidthCollapsed + 10}px`,
           transition: 'margin-left 0.3s cubic-bezier(.4,0,.2,1)',
         }}
       >
@@ -143,6 +177,46 @@ export default function AllPosts() {
                       <div className={glassCardClass}>
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                           {Object.entries(grouped.marking_scheme).map(([key, groupInfo]) => (
+                            <GroupedPostCard
+                              key={key}
+                              groupKey={key}
+                              groupInfo={groupInfo}
+                              onClick={() => navigate('/group-files', { state: { groupInfo } })}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {/* Notes Group */}
+                  {Object.keys(grouped.notes).length > 0 && (
+                    <>
+                      <h2 className="text-2xl font-extrabold uppercase mb-4 mt-10 text-black tracking-wide">
+                        Notes
+                      </h2>
+                      <div className={glassCardClass}>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                          {Object.entries(grouped.notes).map(([key, groupInfo]) => (
+                            <GroupedPostCard
+                              key={key}
+                              groupKey={key}
+                              groupInfo={groupInfo}
+                              onClick={() => navigate('/group-files', { state: { groupInfo } })}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {/* Results Group */}
+                  {Object.keys(grouped.results).length > 0 && (
+                    <>
+                      <h2 className="text-2xl font-extrabold uppercase mb-4 mt-10 text-black tracking-wide">
+                        Results
+                      </h2>
+                      <div className={glassCardClass}>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                          {Object.entries(grouped.results).map(([key, groupInfo]) => (
                             <GroupedPostCard
                               key={key}
                               groupKey={key}

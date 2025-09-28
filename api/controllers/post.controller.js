@@ -2,9 +2,41 @@ import NewPost from '../models/NewPost.js';
  
 // Function to handle file upload
 // uploadFile function
+// controllers/post.controller.js
+
+const EXAMISH = ["exams", "results", "marking_scheme"];
+const EXAM_TYPES = ["opener", "midterm", "endterm"];
+const EXAM_STATUSES = ["exam_in_progress", "past_exams"];
+
 export const uploadFile = async (req, res, next) => {
   try {
-    const { userId, fileUrl, category, subject, year, form, term, title, description, status } = req.body; // updated terms to term
+    const {
+      userId,
+      fileUrl,
+      category,
+      subject,
+      year,
+      form,
+      term,
+      title,
+      description,
+      status,
+      examType,
+    } = req.body;
+
+    const isExamish = EXAMISH.includes(category);
+    const parsedExamType = (examType || "").toLowerCase().trim();
+
+    // validate examType only when category needs it
+    const finalExamType = isExamish
+      ? (EXAM_TYPES.includes(parsedExamType) ? parsedExamType : "")
+      : "";
+
+    // status only applies to exams
+    const finalStatus =
+      category === "exams"
+        ? (EXAM_STATUSES.includes((status || "").trim()) ? status : "past_exams")
+        : "not_exam";
 
     const post = new NewPost({
       userId,
@@ -13,10 +45,11 @@ export const uploadFile = async (req, res, next) => {
       subject,
       form,
       year,
-      term, // updated terms to term
+      term,
       title,
       description,
-      status,
+      status: finalStatus,
+      examType: finalExamType, // ← no more forced "opener"
     });
 
     const savedPost = await post.save();
@@ -25,6 +58,7 @@ export const uploadFile = async (req, res, next) => {
     next(err);
   }
 };
+
 
 
 
@@ -103,7 +137,7 @@ export const deletepost = async (req, res, next) => {
 // controllers/post.controller.js
 
 export const updatepost = async (req, res, next) => {
-  const { fileUrl, category, subject, year, term, form, title, description,status } = req.body;
+  const { fileUrl, category, subject, year, term, form, title, description,status,examType } = req.body;
   const postId = req.params.id;
 
   try {
@@ -119,6 +153,7 @@ export const updatepost = async (req, res, next) => {
         title,
         description,
         status,
+        examType,
       },
       { new: true }
     );
