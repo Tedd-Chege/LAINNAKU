@@ -7,9 +7,10 @@ import { useEffect, useState } from 'react';
 
 const navItems = [
   { icon: HiPlusCircle, label: "Add Files", to: "/create-post1", admin: true },
-  { icon: HiOutlineSearch, label: "Search Files", to: "/search" },
+
   { icon: HiDocumentText, label: "All Files", to: "/", admin: true },
   { icon: HiOutlineFolder, label: "File Management", to: "/dashboard?tab=posts", overallAdmin: true },
+    { icon: HiOutlineSearch, label: "Search Files", to: "/search" },
   { icon: HiOutlineUserGroup, label: "User Management", to: "/dashboard?tab=usersDashboard", overallAdmin: true },
 ];
 

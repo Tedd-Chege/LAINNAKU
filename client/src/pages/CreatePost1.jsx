@@ -271,38 +271,41 @@ const UploadForm = () => {
             <div>
               <label className={labelClass} htmlFor="subject">Subject</label>
               <select
-                id="subject"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                className={fieldClass}
-                required
-              >
-                <option value="">Select Subject</option>
-                <option value="math">Math</option>
-                <option value="english">English</option>
-                <option value="Kiswahili">Kiswahili</option>
-                <option value="biology">Biology</option>
-                <option value="chemistry">Chemistry</option>
-                <option value="physics">Physics</option>
-                <option value="history">History</option>
-                <option value="geography">Geography</option>
-                <option value="cre">CRE</option>
-                <option value="computer">Computer</option>
-                <option value="french">French</option>
-                <option value="aviation">Aviation</option>
-                <option value="agriculture">Agriculture</option>
-                <option value="music">Music</option>
-                <option value="homescience">Home Science</option>
-                <option value="electricity">Electricity</option>
-                <option value="business">Business</option>
-                <option value="woodwork">Woodwork</option>
-                <option value="art">Art</option>
-                <option value="building_construction">Building Construction</option>
-                <option value="all_subjects">All Subjects</option>
-                <option value="drawing_design">Drawing & Design</option>
-                <option value="german">German</option>
-                <option value="IRE">IRE</option>
-              </select>
+  id="subject"
+  value={subject}
+  onChange={(e) => setSubject(e.target.value)}
+  className={fieldClass}
+  required
+>
+  <option value="">Select Subject</option>
+  <option value="math">Math</option>
+  <option value="english">English</option>
+  <option value="kiswahili">Kiswahili</option>
+  <option value="biology">Biology</option>
+  <option value="chemistry">Chemistry</option>
+  <option value="physics">Physics</option>
+  <option value="history">History</option>
+  <option value="geography">Geography</option>
+  <option value="cre">CRE</option>
+  <option value="computer">Computer</option>
+  <option value="french">French</option>
+  <option value="aviation">Aviation</option>
+  <option value="agriculture">Agriculture</option>
+  <option value="music">Music</option>
+  <option value="home_science">Home Science</option>
+  <option value="electricity">Electricity</option>
+  <option value="business">Business</option>
+  <option value="woodwork">Woodwork</option>
+  <option value="art_and_design">Art & Design</option>
+  <option value="building_construction">Building Construction</option>
+  <option value="all_subjects">All Subjects</option>
+  <option value="drawing_and_design">Drawing & Design</option>
+  <option value="german">German</option>
+  <option value="ire">IRE</option>
+  <option value="power_mechanics">Power Mechanics</option>
+  <option value="metal_work">Metal Work</option>
+</select>
+
             </div>
 
             <div>

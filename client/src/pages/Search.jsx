@@ -223,6 +223,8 @@ return (
                   <option value="art">Art</option>
                   <option value="drawing_design">Drawing and design</option>
                   <option value="building_construction">Building & Construction</option>
+                    <option value="power_mechanics">Power Mechanics</option>
+  <option value="metal_work">Metal Work</option>
                   <option value="all_subjects">All subjects</option>
                 </select>
               </div>

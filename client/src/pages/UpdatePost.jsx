@@ -200,6 +200,8 @@ const UpdatePost = () => {
     <option value="drawing_design">Drawing & Design</option>
     <option value="german">German</option>
     <option value="IRE">IRE</option>
+      <option value="power_mechanics">Power Mechanics</option>
+  <option value="metal_work">Metal Work</option>
   </select>
 </div>
 
