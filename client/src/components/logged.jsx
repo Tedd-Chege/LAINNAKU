@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import DashSidebar from '../components/DashSidebar';
 import PostCard from '../components/PostCard';
@@ -53,60 +53,133 @@ export default function AllPosts() {
     }
   };
 
-  // Group logic
-  const grouped = { exams: {}, marking_scheme: {}, notes: {}, results: {}, others: [] };
-  posts.forEach(post => {
-    if (post.category === 'exams') {
-      // Group by status, form, year, term, and examType
-      const key = `${post.status}-${post.form}-${post.year}-${post.term}-${post.examType}`;
-      if (!grouped.exams[key]) {
-        grouped.exams[key] = {
-          status: post.status,
-          form: post.form,
-          year: post.year,
-          term: post.term,
-          examType: post.examType,
-          files: [],
-        };
-      }
-      grouped.exams[key].files.push(post);
-    } else if (post.category === 'marking_scheme') {
-      const key = `${post.year}-${post.term}-${post.examType}`;
-      if (!grouped.marking_scheme[key]) {
-        grouped.marking_scheme[key] = {
-          year: post.year,
-          term: post.term,
-          examType: post.examType,
-          files: [],
-        };
-      }
-      grouped.marking_scheme[key].files.push(post);
-    } else if (post.category === 'notes') {
-      const key = `${post.form}`;
-      if (!grouped.notes[key]) {
-        grouped.notes[key] = {
-          form: post.form,
-          files: [],
-        };
-      }
-      grouped.notes[key].files.push(post);
-    } else if (post.category === 'results') {
-      const key = `${post.year}-${post.term}-${post.examType}`;
-      if (!grouped.results[key]) {
-        grouped.results[key] = {
-          year: post.year,
-          term: post.term,
-          examType: post.examType,
-          files: [],
-        };
-      }
-      grouped.results[key].files.push(post);
-    } else {
-      grouped.others.push(post);
-    }
-  });
+  // ---------- helpers ----------
+  const norm = (v) => (v == null ? '' : String(v)).trim();
+  const normUnderscore = (v) => norm(v).toLowerCase().replace(/[-\s]+/g, '_');
+  const newestDate = (arr) =>
+    arr.reduce((max, p) => {
+      const d = new Date(p.uploadDate || 0).getTime();
+      return d > max ? d : max;
+    }, 0);
 
-  const glassCardClass = "backdrop-blur-[6px] bg-white/60 rounded-2xl shadow-lg border border-white/20 p-4 mb-8";
+  // ---------- group + sort (memoized) ----------
+  const {
+    examGroupsSorted,
+    markingGroupsSorted,
+    notesGroupsSorted,
+    resultGroupsSorted,
+    othersSorted,
+  } = useMemo(() => {
+    // Build maps
+    const exams = {};
+    const marking = {};
+    const notes = {};
+    const results = {};
+    const others = [];
+
+    for (const post of posts) {
+      const cat = norm(post.category);
+      if (cat === 'exams') {
+        // group key: status + identity; status normalized for safety
+        const status = normUnderscore(post.status); // 'exam_in_progress' | 'past_exams' | ...
+        const key = `${status}|${post.form}|${post.year}|${post.term}|${post.examType}`;
+        if (!exams[key]) {
+          exams[key] = {
+            category: 'exams',
+            status,
+            form: post.form,
+            year: post.year,
+            term: post.term,
+            examType: post.examType,
+            files: [],
+            _newest: 0,
+          };
+        }
+        exams[key].files.push(post);
+      } else if (cat === 'marking_scheme') {
+        const key = `${post.year}|${post.term}|${post.examType}`;
+        if (!marking[key]) {
+          marking[key] = {
+            category: 'marking_scheme',
+            year: post.year,
+            term: post.term,
+            examType: post.examType,
+            files: [],
+            _newest: 0,
+          };
+        }
+        marking[key].files.push(post);
+      } else if (cat === 'notes') {
+        const key = `${post.form}`;
+        if (!notes[key]) {
+          notes[key] = {
+            category: 'notes',
+            form: post.form,
+            files: [],
+            _newest: 0,
+          };
+        }
+        notes[key].files.push(post);
+      } else if (cat === 'results') {
+        const key = `${post.year}|${post.term}|${post.examType}`;
+        if (!results[key]) {
+          results[key] = {
+            category: 'results',
+            year: post.year,
+            term: post.term,
+            examType: post.examType,
+            files: [],
+            _newest: 0,
+          };
+        }
+        results[key].files.push(post);
+      } else {
+        others.push(post);
+      }
+    }
+
+    // Sort files inside each group by newest first, and compute group newest
+    const finalizeGroup = (g) => {
+      g.files.sort((a, b) => new Date(b.uploadDate || 0) - new Date(a.uploadDate || 0));
+      g._newest = newestDate(g.files);
+      return g;
+    };
+
+    const examGroups = Object.values(exams).map(finalizeGroup);
+    const markingGroups = Object.values(marking).map(finalizeGroup);
+    const notesGroups = Object.values(notes).map(finalizeGroup);
+    const resultGroups = Object.values(results).map(finalizeGroup);
+
+    // Sort groups:
+    // - Exams: IN PROGRESS first, then by newest group date desc
+    const rankStatus = (s) => (s === 'exam_in_progress' ? 0 : 1);
+    examGroups.sort((a, b) => {
+      const r = rankStatus(a.status) - rankStatus(b.status);
+      if (r !== 0) return r;
+      return b._newest - a._newest;
+    });
+
+    // - Others: by newest group date desc
+    markingGroups.sort((a, b) => b._newest - a._newest);
+    notesGroups.sort((a, b) => b._newest - a._newest);
+    resultGroups.sort((a, b) => b._newest - a._newest);
+
+    // - Other single posts: newest first
+    const othersSortedLocal = [...others].sort(
+      (a, b) => new Date(b.uploadDate || 0) - new Date(a.uploadDate || 0)
+    );
+
+    return {
+      examGroupsSorted: examGroups,
+      markingGroupsSorted: markingGroups,
+      notesGroupsSorted: notesGroups,
+      resultGroupsSorted: resultGroups,
+      othersSorted: othersSortedLocal,
+    };
+  }, [posts]);
+
+  const glassCardClass =
+    'backdrop-blur-[6px] bg-white/60 rounded-2xl shadow-lg border border-white/20 p-4 mb-8';
 
   return (
     <div className="min-h-screen bg-[#fafafa] font-sans pt-16 flex">
@@ -124,7 +197,7 @@ export default function AllPosts() {
       >
         <DashSidebar
           expanded={sidebarExpanded}
-          onToggle={() => setSidebarExpanded(e => !e)}
+          onToggle={() => setSidebarExpanded((e) => !e)}
         />
       </aside>
 
@@ -143,110 +216,128 @@ export default function AllPosts() {
       >
         <div className="w-full max-w-6xl mx-auto">
           {loading ? (
-            <div className="text-center text-gray-500 font-medium animate-pulse">Loading...</div>
+            <div className="text-center text-gray-500 font-medium animate-pulse">
+              Loading...
+            </div>
           ) : (
             <div>
-              {Object.keys(grouped).length > 0 ? (
-                <div>
-                  {/* Exams Group */}
-                  {Object.keys(grouped.exams).length > 0 && (
-                    <>
-                      <h2 className="text-2xl font-extrabold uppercase mb-4 mt-10 text-black tracking-wide">
-                        Exams
-                      </h2>
-                      <div className={glassCardClass}>
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                          {Object.entries(grouped.exams).map(([key, groupInfo]) => (
-                            <GroupedPostCard
-                              key={key}
-                              groupKey={key}
-                              groupInfo={groupInfo}
-                              onClick={() => navigate('/group-files', { state: { groupInfo } })}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  {/* Marking Scheme Group */}
-                  {Object.keys(grouped.marking_scheme).length > 0 && (
-                    <>
-                      <h2 className="text-2xl font-extrabold uppercase mb-4 mt-10 text-black tracking-wide">
-                        Marking Schemes
-                      </h2>
-                      <div className={glassCardClass}>
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                          {Object.entries(grouped.marking_scheme).map(([key, groupInfo]) => (
-                            <GroupedPostCard
-                              key={key}
-                              groupKey={key}
-                              groupInfo={groupInfo}
-                              onClick={() => navigate('/group-files', { state: { groupInfo } })}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  {/* Notes Group */}
-                  {Object.keys(grouped.notes).length > 0 && (
-                    <>
-                      <h2 className="text-2xl font-extrabold uppercase mb-4 mt-10 text-black tracking-wide">
-                        Notes
-                      </h2>
-                      <div className={glassCardClass}>
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                          {Object.entries(grouped.notes).map(([key, groupInfo]) => (
-                            <GroupedPostCard
-                              key={key}
-                              groupKey={key}
-                              groupInfo={groupInfo}
-                              onClick={() => navigate('/group-files', { state: { groupInfo } })}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  {/* Results Group */}
-                  {Object.keys(grouped.results).length > 0 && (
-                    <>
-                      <h2 className="text-2xl font-extrabold uppercase mb-4 mt-10 text-black tracking-wide">
-                        Results
-                      </h2>
-                      <div className={glassCardClass}>
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                          {Object.entries(grouped.results).map(([key, groupInfo]) => (
-                            <GroupedPostCard
-                              key={key}
-                              groupKey={key}
-                              groupInfo={groupInfo}
-                              onClick={() => navigate('/group-files', { state: { groupInfo } })}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  {/* Other Categories */}
-                  {grouped.others.length > 0 && (
-                    <>
-                      <h2 className="text-2xl font-extrabold uppercase mb-4 mt-10 text-black tracking-wide">
-                        Other Files
-                      </h2>
-                      <div className={glassCardClass}>
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                          {grouped.others.map((post) => (
-                            <PostCard key={post._id} post={post} />
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <p className="text-center text-gray-500">No posts available!</p>
+              {/* Exams Section */}
+              {examGroupsSorted.length > 0 && (
+                <>
+                  <h2 className="text-2xl font-extrabold uppercase mb-4 mt-10 text-black tracking-wide">
+                    Exams
+                  </h2>
+                  <div className={glassCardClass}>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {examGroupsSorted.map((groupInfo, idx) => (
+                        <GroupedPostCard
+                          key={`ex-${idx}-${groupInfo.year}-${groupInfo.term}-${groupInfo.examType}-${groupInfo.status}`}
+                          groupKey={`ex-${idx}`}
+                          groupInfo={groupInfo}
+                          onClick={() =>
+                            navigate('/group-files', { state: { groupInfo } })
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </>
               )}
+
+              {/* Marking Schemes */}
+              {markingGroupsSorted.length > 0 && (
+                <>
+                  <h2 className="text-2xl font-extrabold uppercase mb-4 mt-10 text-black tracking-wide">
+                    Marking Schemes
+                  </h2>
+                  <div className={glassCardClass}>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {markingGroupsSorted.map((groupInfo, idx) => (
+                        <GroupedPostCard
+                          key={`mk-${idx}-${groupInfo.year}-${groupInfo.term}-${groupInfo.examType}`}
+                          groupKey={`mk-${idx}`}
+                          groupInfo={groupInfo}
+                          onClick={() =>
+                            navigate('/group-files', { state: { groupInfo } })
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Notes */}
+              {notesGroupsSorted.length > 0 && (
+                <>
+                  <h2 className="text-2xl font-extrabold uppercase mb-4 mt-10 text-black tracking-wide">
+                    Notes
+                  </h2>
+                  <div className={glassCardClass}>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {notesGroupsSorted.map((groupInfo, idx) => (
+                        <GroupedPostCard
+                          key={`nt-${idx}-${groupInfo.form}`}
+                          groupKey={`nt-${idx}`}
+                          groupInfo={groupInfo}
+                          onClick={() =>
+                            navigate('/group-files', { state: { groupInfo } })
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Results */}
+              {resultGroupsSorted.length > 0 && (
+                <>
+                  <h2 className="text-2xl font-extrabold uppercase mb-4 mt-10 text-black tracking-wide">
+                    Results
+                  </h2>
+                  <div className={glassCardClass}>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {resultGroupsSorted.map((groupInfo, idx) => (
+                        <GroupedPostCard
+                          key={`rs-${idx}-${groupInfo.year}-${groupInfo.term}-${groupInfo.examType}`}
+                          groupKey={`rs-${idx}`}
+                          groupInfo={groupInfo}
+                          onClick={() =>
+                            navigate('/group-files', { state: { groupInfo } })
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Other Files */}
+              {othersSorted.length > 0 && (
+                <>
+                  <h2 className="text-2xl font-extrabold uppercase mb-4 mt-10 text-black tracking-wide">
+                    Other Files
+                  </h2>
+                  <div className={glassCardClass}>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {othersSorted.map((post) => (
+                        <PostCard key={post._id} post={post} />
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* No content */}
+              {examGroupsSorted.length === 0 &&
+                markingGroupsSorted.length === 0 &&
+                notesGroupsSorted.length === 0 &&
+                resultGroupsSorted.length === 0 &&
+                othersSorted.length === 0 && (
+                  <p className="text-center text-gray-500">No posts available!</p>
+                )}
+
               {showMore && (
                 <div className="text-center mt-4">
                   <Button
