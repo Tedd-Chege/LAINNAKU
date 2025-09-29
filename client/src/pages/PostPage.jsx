@@ -98,9 +98,7 @@ export default function PostPage() {
               </p>
             </>
           )}
-          <p>
-            <span className="font-semibold text-[#ff385c]">Description:</span> {post.description}
-          </p>
+       
           <p>
             <span className="font-semibold text-[#ff385c]">Upload Date:</span>{' '}
             {new Date(post.uploadDate).toLocaleDateString()}

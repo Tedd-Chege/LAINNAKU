@@ -81,11 +81,13 @@ export default function DashSidebar({ expanded, onToggle }) {
         {/* Nav icons & labels */}
         <nav className="flex flex-col items-center w-full gap-2">
           {navItems.map((item) => {
-            if (item.admin && !currentUser?.isAdmin) return null;
-            if (item.overallAdmin && !currentUser?.isOverallAdmin) return null;
-            // Only show one "File Management" link for overallAdmin, and one "All Files" for admin
-            if (item.label === "File Management" && currentUser?.isAdmin && !currentUser?.isOverallAdmin) return null;
-            if (item.label === "All Files" && !currentUser?.isAdmin) return null;
+              // Items for overall admins only
+      if (item.overallAdmin && !currentUser?.isOverallAdmin) return false;
+
+      // Items for admins: show for admin OR overallAdmin
+      if (item.admin && !(currentUser?.isAdmin || currentUser?.isOverallAdmin)) return false;
+
+      // Public items (no flags) always show
             return (
               <Link
                 to={item.to}

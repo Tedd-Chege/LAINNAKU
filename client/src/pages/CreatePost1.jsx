@@ -12,7 +12,7 @@ import { app } from "../firebase";
 import DashSidebar from "../components/DashSidebar";
 
 const fieldClass =
-  "block w-full px-5 py-3 text-base text-[#222] bg-white border-2 border-[#ececec] rounded-xl focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 focus:shadow-lg outline-none transition placeholder:font-normal placeholder:text-[#000000]";
+  "block w-full px-5 py-3 text-base text-[#222] bg-white border-2 border-[#ececec] rounded-xl focus:border-[#ff385c] focus:ring-2 focus:ring-[#ff385c]/20 focus:shadow-lg outline-none transition placeholder:font-normal ";
 
 const labelClass = "block font-semibold text-base text-[#222] mb-2";
 const buttonClass =
@@ -37,7 +37,7 @@ const UploadForm = () => {
   const [year, setYear] = useState("");
   const [term, setTerm] = useState("");
   const [form, setForm] = useState("");
-  const [description, setDescription] = useState("");
+ 
   const [title, setTitle] = useState("");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
@@ -132,7 +132,7 @@ const UploadForm = () => {
       year: cat === "notes" ? "" : year,
       term: cat === "notes" ? "" : term,
       form,
-      description,
+     
       title,
       uploadDate: new Date(),
       examType: (cat === "exams" || cat === "marking_scheme" || cat === "results") ? et : "",
@@ -157,7 +157,7 @@ const UploadForm = () => {
       setYear("");
       setTerm("");
       setForm("");
-      setDescription("");
+      
       setTitle("");
       setStatus("not_exam");
       setExamType("opener");
@@ -193,7 +193,10 @@ const UploadForm = () => {
           <form className="space-y-8" onSubmit={handleSubmit} autoComplete="off">
             <div>
               <label className={labelClass} htmlFor="title">Title</label>
-              <input id="title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className={fieldClass} />
+              <input id="title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} required  className={`${fieldClass} placeholder-gray-400`}  // 👈 added Tailwind placeholder style
+    placeholder="ENGLISH PP3"/>
+
+
             </div>
 
             <div>
@@ -308,16 +311,7 @@ const UploadForm = () => {
 
             </div>
 
-            <div>
-              <label className={labelClass} htmlFor="description">Description</label>
-              <textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className={fieldClass + " min-h-[90px] resize-none"}
-                required
-              />
-            </div>
+            
 
             <div>
               <label className={labelClass} htmlFor="file">Select File</label>

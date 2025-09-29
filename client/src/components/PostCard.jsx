@@ -40,9 +40,7 @@ const PostCard = ({ post }) => {
           </>
         )}
 
-        {post.description && (
-          <p className="italic text-gray-600"><span className="font-semibold not-italic">Description:</span> {post.description}</p>
-        )}
+       
 
         <p><span className="font-semibold">Uploaded:</span> {safeDate}</p>
       </div>

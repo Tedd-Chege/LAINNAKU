@@ -24,7 +24,7 @@ const UpdatePost = () => {
   const [year, setYear] = useState("");
   const [term, setTerm] = useState("");
   const [form, setForm] = useState("");
-  const [description, setDescription] = useState("");
+ 
   const [title, setTitle] = useState("");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
@@ -44,7 +44,7 @@ const UpdatePost = () => {
         setYear(post.year);
         setTerm(post.term);
         setForm(post.form);
-        setDescription(post.description);
+        
         setTitle(post.title);
         setExamType(post.examType || "opener");
         setStatus(post.status || "past_exams");
@@ -100,7 +100,7 @@ const UpdatePost = () => {
       year: category === "notes" ? "" : year,
       term: category === "notes" ? "" : term,
       form,
-      description,
+      
       title,
       examType: category !== "notes" ? examType : "",
       status,
@@ -241,10 +241,7 @@ const UpdatePost = () => {
               </select>
             </div>
 
-            <div>
-              <label className={labelClass} htmlFor="description">Description</label>
-              <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} className={fieldClass + " min-h-[90px] resize-none"} required placeholder="Describe the file..." />
-            </div>
+            
 
             <button type="submit" className={buttonClass}>Update</button>
           </form>

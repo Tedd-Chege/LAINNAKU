@@ -75,10 +75,7 @@ subject: {
     type: String,
     required: true,
   },
-  description: {
-    type: String,
-    required: true,
-  },
+
   examType: {
     type: String,
     enum: ["opener", "midterm", "endterm"],
